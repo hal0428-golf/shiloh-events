@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, eventsByDay, isFifth, loadEvents, visibleEvent } from '../lib';
+import { EventItem, eventsByDay, isFifth, isHoliday, loadEvents, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
 import EventList from './EventList';
 import MonthGrid from './MonthGrid';
 
 const ELEM = '__elementary';
+const NO_CHIP = ['All School Calendar', 'Middle School', 'Secondary School', 'Elementary School'];
 const MAX_AHEAD = 9; // months ahead the feed covers
 
 export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => void; onSetup: () => void }) {
@@ -50,12 +51,12 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
   const shown = useMemo(() => (events ?? []).filter(visibleEvent), [events]);
 
   const chips = useMemo(() => {
-    const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => c !== 'All School Calendar'))).sort();
+    const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => !NO_CHIP.includes(c)))).sort();
     return [{ id: 'All', label: 'All' }, { id: ELEM, label: '5th Grade ★' }, ...cats.map((c) => ({ id: c, label: c }))];
   }, [shown]);
 
   const filtered = useMemo(
-    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isFifth(e) : (e.category ?? 'Other') === filter)),
+    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isFifth(e) || isHoliday(e) : (e.category ?? 'Other') === filter)),
     [shown, filter],
   );
   const byDay = useMemo(() => eventsByDay(filtered), [filtered]);
