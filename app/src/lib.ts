@@ -28,11 +28,9 @@ export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
 export type Kind = 'holiday' | 'elem' | 'other';
 export const kindOf = (e: EventItem): Kind => (isHoliday(e) ? 'holiday' : isFifth(e) ? 'elem' : 'other');
 
-/** Only boys basketball (or unspecified) and baseball are shown from athletics. */
+/** For 5th grade, only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
 function sportAllowed(title: string): boolean {
-  if (/baseball/i.test(title)) return true;
-  if (/basketball/i.test(title)) return /boys/i.test(title) || !/girls/i.test(title);
-  return false;
+  return /\byouth\b/i.test(title);
 }
 export function visibleEvent(e: EventItem): boolean {
   if (isFifth(e) || isHoliday(e)) return true;
