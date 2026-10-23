@@ -1,6 +1,6 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { EventItem, formatTime, isElementary, parseDay } from '../lib';
-import { useTheme } from '../theme';
+import { EventItem, formatTime, kindOf, parseDay } from '../lib';
+import { kindStyle, useTheme } from '../theme';
 
 export default function DaySheet({
   dayKey, events, onClose, onOpen,
@@ -19,13 +19,14 @@ export default function DaySheet({
         <ScrollView>
           {events.length === 0 && <Text style={{ color: t.sub, paddingVertical: 16 }}>No events.</Text>}
           {events.map((e, i) => {
-            const el = isElementary(e);
+            const kind = kindOf(e);
+            const k = kindStyle(t, kind);
             return (
               <Pressable
                 key={e.id + i}
                 onPress={() => { onClose(); onOpen(e); }}
-                style={[st.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: el ? t.elem : t.line, borderLeftWidth: el ? 5 : StyleSheet.hairlineWidth }]}>
-                <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>{formatTime(e)}{el ? '  ·  Elementary' : ''}</Text>
+                style={[st.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: k.edge, borderLeftWidth: kind === 'other' ? StyleSheet.hairlineWidth : 5 }]}>
+                <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>{formatTime(e)}{kind === 'elem' ? '  ·  Elementary' : kind === 'holiday' ? '  ·  Holiday' : ''}</Text>
                 <Text style={{ color: t.text, fontSize: 16, fontWeight: '600', marginTop: 2 }}>{e.title}</Text>
                 {e.location ? <Text style={{ color: t.sub, fontSize: 13, marginTop: 2 }}>{e.location}</Text> : null}
               </Pressable>

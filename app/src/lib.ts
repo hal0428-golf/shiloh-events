@@ -17,6 +17,28 @@ export type EventItem = {
 const ELEM_RE = /\b(elementary|kindergarten|pre-?k|(1st|2nd|3rd|4th|5th) grade)\b/i;
 export const isElementary = (e: EventItem) => e.category === 'Elementary School' || ELEM_RE.test(e.title);
 
+// ---- What to show (edit these to change the rules) ----
+const HIDDEN_CATEGORIES = ['Middle School', 'Secondary School'];
+const SPORT_RE = /\b(football|volleyball|soccer|softball|tennis|golf|track|cross country|swim|wrestling|cheer|dance|trap|basketball|baseball)\b/i;
+const GAME_RE = /(@|\bvs\.?|tournament|invitational|meet\b|state|classic|conference|jamboree|scrimmage|championship|semifinals|finals)/i;
+const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memorial day|presidents|good friday|easter monday|new year)/i;
+
+export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
+export type Kind = 'holiday' | 'elem' | 'other';
+export const kindOf = (e: EventItem): Kind => (isHoliday(e) ? 'holiday' : isElementary(e) ? 'elem' : 'other');
+
+/** Only boys basketball (or unspecified) and baseball are shown from athletics. */
+function sportAllowed(title: string): boolean {
+  if (/baseball/i.test(title)) return true;
+  if (/basketball/i.test(title)) return /boys/i.test(title) || !/girls/i.test(title);
+  return false;
+}
+export function visibleEvent(e: EventItem): boolean {
+  if (e.category && HIDDEN_CATEGORIES.includes(e.category) && !isElementary(e) && !isHoliday(e)) return false;
+  if (SPORT_RE.test(e.title) && GAME_RE.test(e.title) && !sportAllowed(e.title)) return false;
+  return true;
+}
+
 /** Every event on every day (no past filter), elementary first, then all-day, then by time. */
 export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
   const map = new Map<string, EventItem[]>();
@@ -28,7 +50,8 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
     } else add(dayKey(startDate(e)), e);
   }
   for (const list of map.values()) {
-    list.sort((a, b) => Number(isElementary(b)) - Number(isElementary(a)) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
+    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isElementary(e) ? 1 : 0);
+    list.sort((a, b) => rank(b) - rank(a) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
   }
   return map;
 }
@@ -94,7 +117,7 @@ export function groupByDay(events: EventItem[], now = new Date()) {
 export async function loadEvents(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
   try {
     if (EVENTS_URL.includes('YOUR-')) throw new Error('events URL not configured');
-    const r = await fetch(EVENTS_URL, { headers: { 'Cache-Control': 'no-cache' } });
+    const r = await fetch(`${EVENTS_URL}?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const feed = (await r.json()) as Feed;
     try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(feed)); } catch {}

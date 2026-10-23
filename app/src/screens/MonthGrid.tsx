@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { EventItem, dayKey, isElementary } from '../lib';
-import { useTheme } from '../theme';
+import { EventItem, dayKey, isElementary, isHoliday, kindOf } from '../lib';
+import { kindStyle, useTheme } from '../theme';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const BAR_H = 12;
@@ -33,6 +33,7 @@ export default function MonthGrid({
               const key = dayKey(new Date(year, month, n));
               const list = byDay.get(key) ?? [];
               const hasElem = list.some(isElementary);
+              const hasHol = list.some(isHoliday);
               const shown = list.length > maxBars ? Math.max(maxBars - 1, 0) : list.length;
               const extra = list.length - shown;
               const isToday = key === todayKey;
@@ -42,16 +43,16 @@ export default function MonthGrid({
                   onPress={() => onDay(key)}
                   style={{
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
-                    backgroundColor: hasElem ? t.elemTint : t.card, overflow: 'hidden',
+                    backgroundColor: hasHol ? t.holTint : hasElem ? t.elemTint : t.card, overflow: 'hidden',
                   }}>
                   <View style={[st.num, isToday && { backgroundColor: t.accent }]}>
                     <Text style={{ fontSize: 11, fontWeight: '700', color: isToday ? t.bg : t.text }}>{n}</Text>
                   </View>
                   {list.slice(0, shown).map((e, i) => {
-                    const el = isElementary(e);
+                    const k = kindStyle(t, kindOf(e));
                     return (
-                      <View key={e.id + i} style={[st.bar, { backgroundColor: el ? t.elem : t.chip }]}>
-                        <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: el ? '700' : '500', color: el ? t.elemText : t.text }}>{e.title}</Text>
+                      <View key={e.id + i} style={[st.bar, { backgroundColor: k.bg }]}>
+                        <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: k.bold ? '700' : '500', color: k.fg }}>{e.title}</Text>
                       </View>
                     );
                   })}
