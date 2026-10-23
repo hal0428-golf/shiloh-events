@@ -22,7 +22,7 @@ export const isFifth = (e: EventItem) => FIFTH_RE.test(e.title);
 const HIDDEN_CATEGORIES = ['Middle School', 'Secondary School', 'Elementary School'];
 const SPORT_RE = /\b(football|volleyball|soccer|softball|tennis|golf|track|cross country|swim|wrestling|cheer|dance|trap|basketball|baseball)\b/i;
 const GAME_RE = /(@|\bvs\.?|tournament|invitational|meet\b|state|classic|conference|jamboree|scrimmage|championship|semifinals|finals)/i;
-const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memorial day|presidents|good friday|easter monday|new year)/i;
+const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memorial day|presidents|good friday|easter monday|new year|teacher work day|virtual learning day|last day of school)/i;
 
 export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
 export type Kind = 'holiday' | 'elem' | 'other';

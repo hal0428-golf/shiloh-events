@@ -111,7 +111,7 @@ def fetch_month(session, element_id, year, month):
     return r.text
 
 
-def fetch_events(months_ahead=3, today=None):
+def fetch_events(months_ahead=9, today=None):
     today = today or datetime.now(TZ).date()
     session = requests.Session()
     element_id = discover_element_id(session)

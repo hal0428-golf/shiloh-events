@@ -8,6 +8,7 @@ import EventList from './EventList';
 import MonthGrid from './MonthGrid';
 
 const ELEM = '__elementary';
+const MAX_AHEAD = 9; // months ahead the feed covers
 
 export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => void; onSetup: () => void }) {
   const t = useTheme();
@@ -40,7 +41,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 25 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
       onPanResponderRelease: (_, g) => {
-        if (g.dx < -50) setCursor((c) => Math.min(c + 1, base + 3));
+        if (g.dx < -50) setCursor((c) => Math.min(c + 1, base + MAX_AHEAD));
         else if (g.dx > 50) setCursor((c) => Math.max(c - 1, base));
       },
     }),
@@ -71,7 +72,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
     : [info?.offline ? 'Offline, showing saved events' : info?.updated ? `School feed built ${fmt(new Date(info.updated))}` : null,
        checked ? `checked ${checked.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : null, 'tap to refresh'].filter(Boolean).join(' · ');
   const canPrev = cursor > base;
-  const canNext = cursor < base + 3;
+  const canNext = cursor < base + MAX_AHEAD;
 
   return (
     <View style={{ flex: 1, backgroundColor: t.bg }}>
