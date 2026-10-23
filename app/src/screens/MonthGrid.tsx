@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { EventItem, dayKey, isElementary, isHoliday, kindOf } from '../lib';
+import { EventItem, dayKey, isFifth, isHoliday, kindOf } from '../lib';
 import { kindStyle, useTheme } from '../theme';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -32,7 +32,7 @@ export default function MonthGrid({
               if (n < 1 || n > days) return <View key={c} style={{ flex: 1 }} />;
               const key = dayKey(new Date(year, month, n));
               const list = byDay.get(key) ?? [];
-              const hasElem = list.some(isElementary);
+              const hasElem = list.some(isFifth);
               const hasHol = list.some(isHoliday);
               const shown = list.length > maxBars ? Math.max(maxBars - 1, 0) : list.length;
               const extra = list.length - shown;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, eventsByDay, isElementary, loadEvents, visibleEvent } from '../lib';
+import { EventItem, eventsByDay, isFifth, loadEvents, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
 import EventList from './EventList';
@@ -49,12 +49,12 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
   const shown = useMemo(() => (events ?? []).filter(visibleEvent), [events]);
 
   const chips = useMemo(() => {
-    const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => c !== 'Elementary School' && c !== 'All School Calendar'))).sort();
-    return [{ id: 'All', label: 'All' }, { id: ELEM, label: 'Elementary ★' }, ...cats.map((c) => ({ id: c, label: c }))];
+    const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => c !== 'All School Calendar'))).sort();
+    return [{ id: 'All', label: 'All' }, { id: ELEM, label: '5th Grade ★' }, ...cats.map((c) => ({ id: c, label: c }))];
   }, [shown]);
 
   const filtered = useMemo(
-    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isElementary(e) : (e.category ?? 'Other') === filter)),
+    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isFifth(e) : (e.category ?? 'Other') === filter)),
     [shown, filter],
   );
   const byDay = useMemo(() => eventsByDay(filtered), [filtered]);

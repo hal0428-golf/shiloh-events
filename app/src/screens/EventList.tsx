@@ -23,7 +23,7 @@ export default function EventList({
             onPress={() => onOpen(item)}
             style={[s.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: k.edge, borderLeftWidth: kind === 'other' ? StyleSheet.hairlineWidth : 5 }]}>
             <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>
-              {formatTime(item)}{kind === 'elem' ? '  ·  Elementary' : kind === 'holiday' ? '  ·  Holiday' : ''}{item.source === 'email' ? '  ·  from email' : ''}
+              {formatTime(item)}{kind === 'elem' ? '  ·  5th grade' : kind === 'holiday' ? '  ·  Holiday' : ''}{item.source === 'email' ? '  ·  from email' : ''}
             </Text>
             <Text style={{ color: t.text, fontSize: 16, fontWeight: '600', marginTop: 2 }}>{item.title}</Text>
             {item.location ? <Text style={{ color: t.sub, fontSize: 13, marginTop: 2 }}>{item.location}</Text> : null}

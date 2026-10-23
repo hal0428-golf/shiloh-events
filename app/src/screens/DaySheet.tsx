@@ -26,7 +26,7 @@ export default function DaySheet({
                 key={e.id + i}
                 onPress={() => { onClose(); onOpen(e); }}
                 style={[st.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: k.edge, borderLeftWidth: kind === 'other' ? StyleSheet.hairlineWidth : 5 }]}>
-                <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>{formatTime(e)}{kind === 'elem' ? '  ·  Elementary' : kind === 'holiday' ? '  ·  Holiday' : ''}</Text>
+                <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>{formatTime(e)}{kind === 'elem' ? '  ·  5th grade' : kind === 'holiday' ? '  ·  Holiday' : ''}</Text>
                 <Text style={{ color: t.text, fontSize: 16, fontWeight: '600', marginTop: 2 }}>{e.title}</Text>
                 {e.location ? <Text style={{ color: t.sub, fontSize: 13, marginTop: 2 }}>{e.location}</Text> : null}
               </Pressable>

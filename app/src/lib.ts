@@ -14,18 +14,19 @@ export type EventItem = {
   source: 'web' | 'email';
 };
 
-const ELEM_RE = /\b(elementary|kindergarten|pre-?k|(1st|2nd|3rd|4th|5th) grade)\b/i;
-export const isElementary = (e: EventItem) => e.category === 'Elementary School' || ELEM_RE.test(e.title);
+const FIFTH_RE = /\b(5th|fifth)\b/i;
+const LOWER_GRADE_RE = /\b(kindergarten|pre-?k|(1st|2nd|3rd|4th) grade)\b/i;
+export const isFifth = (e: EventItem) => FIFTH_RE.test(e.title);
 
 // ---- What to show (edit these to change the rules) ----
-const HIDDEN_CATEGORIES = ['Middle School', 'Secondary School'];
+const HIDDEN_CATEGORIES = ['Middle School', 'Secondary School', 'Elementary School'];
 const SPORT_RE = /\b(football|volleyball|soccer|softball|tennis|golf|track|cross country|swim|wrestling|cheer|dance|trap|basketball|baseball)\b/i;
 const GAME_RE = /(@|\bvs\.?|tournament|invitational|meet\b|state|classic|conference|jamboree|scrimmage|championship|semifinals|finals)/i;
 const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memorial day|presidents|good friday|easter monday|new year)/i;
 
 export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
 export type Kind = 'holiday' | 'elem' | 'other';
-export const kindOf = (e: EventItem): Kind => (isHoliday(e) ? 'holiday' : isElementary(e) ? 'elem' : 'other');
+export const kindOf = (e: EventItem): Kind => (isHoliday(e) ? 'holiday' : isFifth(e) ? 'elem' : 'other');
 
 /** Only boys basketball (or unspecified) and baseball are shown from athletics. */
 function sportAllowed(title: string): boolean {
@@ -34,7 +35,9 @@ function sportAllowed(title: string): boolean {
   return false;
 }
 export function visibleEvent(e: EventItem): boolean {
-  if (e.category && HIDDEN_CATEGORIES.includes(e.category) && !isElementary(e) && !isHoliday(e)) return false;
+  if (isFifth(e) || isHoliday(e)) return true;
+  if (e.category && HIDDEN_CATEGORIES.includes(e.category)) return false;
+  if (LOWER_GRADE_RE.test(e.title)) return false;
   if (SPORT_RE.test(e.title) && GAME_RE.test(e.title) && !sportAllowed(e.title)) return false;
   return true;
 }
@@ -50,7 +53,7 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
     } else add(dayKey(startDate(e)), e);
   }
   for (const list of map.values()) {
-    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isElementary(e) ? 1 : 0);
+    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isFifth(e) ? 1 : 0);
     list.sort((a, b) => rank(b) - rank(a) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
   }
   return map;
