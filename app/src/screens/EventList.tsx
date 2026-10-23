@@ -20,7 +20,7 @@ export default function EventList({
         return (
           <Pressable
             onPress={() => onOpen(item)}
-            style={[s.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: el ? t.gold : t.line, borderLeftWidth: el ? 5 : StyleSheet.hairlineWidth }]}>
+            style={[s.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: el ? t.elem : t.line, borderLeftWidth: el ? 5 : StyleSheet.hairlineWidth }]}>
             <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>
               {formatTime(item)}{el ? '  ·  Elementary' : ''}{item.source === 'email' ? '  ·  from email' : ''}
             </Text>

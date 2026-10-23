@@ -80,7 +80,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
               <Text style={{ color: canPrev ? t.accent : t.line, fontSize: 26, paddingHorizontal: 10 }}>‹</Text>
             </Pressable>
             <Pressable onPress={() => setCursor(base)}>
-              <Text style={{ color: t.text, fontSize: 16, fontWeight: '700', minWidth: 130, textAlign: 'center' }}>{monthName}</Text>
+              <Text style={{ color: t.month, fontSize: 16, fontWeight: '800', minWidth: 130, textAlign: 'center' }}>{monthName}</Text>
             </Pressable>
             <Pressable disabled={!canNext} onPress={() => setCursor(cursor + 1)} hitSlop={10}>
               <Text style={{ color: canNext ? t.accent : t.line, fontSize: 26, paddingHorizontal: 10 }}>›</Text>
@@ -95,8 +95,8 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
             const on = c.id === filter;
             const elem = c.id === ELEM;
             return (
-              <Pressable key={c.id} onPress={() => setFilter(c.id)} style={[s.chip, { backgroundColor: on ? (elem ? t.gold : t.accent) : elem ? t.goldTint : t.chip }]}>
-                <Text style={{ color: on ? (elem ? t.goldText : onAccent) : t.text, fontSize: 13, fontWeight: '600' }}>{c.label}</Text>
+              <Pressable key={c.id} onPress={() => setFilter(c.id)} style={[s.chip, { backgroundColor: on ? (elem ? t.elem : t.accent) : elem ? t.elemTint : t.chip }]}>
+                <Text style={{ color: on ? (elem ? t.elemText : onAccent) : t.text, fontSize: 13, fontWeight: '600' }}>{c.label}</Text>
               </Pressable>
             );
           })}

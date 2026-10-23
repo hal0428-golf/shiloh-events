@@ -42,7 +42,7 @@ export default function MonthGrid({
                   onPress={() => onDay(key)}
                   style={{
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
-                    backgroundColor: hasElem ? t.goldTint : t.card, overflow: 'hidden',
+                    backgroundColor: hasElem ? t.elemTint : t.card, overflow: 'hidden',
                   }}>
                   <View style={[st.num, isToday && { backgroundColor: t.accent }]}>
                     <Text style={{ fontSize: 11, fontWeight: '700', color: isToday ? t.bg : t.text }}>{n}</Text>
@@ -50,8 +50,8 @@ export default function MonthGrid({
                   {list.slice(0, shown).map((e, i) => {
                     const el = isElementary(e);
                     return (
-                      <View key={e.id + i} style={[st.bar, { backgroundColor: el ? t.gold : t.chip }]}>
-                        <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: el ? '700' : '500', color: el ? t.goldText : t.text }}>{e.title}</Text>
+                      <View key={e.id + i} style={[st.bar, { backgroundColor: el ? t.elem : t.chip }]}>
+                        <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: el ? '700' : '500', color: el ? t.elemText : t.text }}>{e.title}</Text>
                       </View>
                     );
                   })}
