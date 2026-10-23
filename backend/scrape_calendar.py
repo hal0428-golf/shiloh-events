@@ -16,6 +16,21 @@ OCCUR = re.compile(
 )
 
 
+KNOWN_COLORS = {
+    "#051b41": "All School Calendar",
+    "#a8ccf8": "Athletics",
+    "#1466e2": "Secondary School",
+    "#939598": "Middle School",
+    "#c5a35a": "Elementary School",
+}
+HEX = re.compile(r"#[0-9a-fA-F]{6}")
+
+
+def _hex(style):
+    m = HEX.search(style or "")
+    return m.group(0).lower() if m else None
+
+
 def _utc(s):
     return datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 
@@ -31,6 +46,11 @@ def parse_month(html):
     """Return a list of event dicts from one month of calendar HTML."""
     soup = BeautifulSoup(html, "html.parser")
     events = {}
+    colors = dict(KNOWN_COLORS)
+    for icon in soup.select(".fsElementEventColorIcon"):
+        c = _hex(icon.get("style"))
+        if c and icon.get("title"):
+            colors[c] = icon["title"]
     for a in soup.select("a[data-occur-id]"):
         m = OCCUR.match(a["data-occur-id"])
         if not m or m.group(0) in events:
@@ -53,6 +73,14 @@ def parse_month(html):
             icon = parent.select_one(".fsElementEventColorIcon")
             if icon is not None:
                 cat = icon.get("title")
+        if cat is None:
+            long_ev = a.find_parent(class_="fsCalendarLongEvent")
+            if long_ev is not None:
+                c = _hex(long_ev.get("style"))
+                if c is None:
+                    bg = long_ev.select_one(".fsCalendarLongEventBackground")
+                    c = _hex(bg.get("style")) if bg else None
+                cat = colors.get(c)
         events[m.group(0)] = {
             "id": m.group(0),
             "title": title,

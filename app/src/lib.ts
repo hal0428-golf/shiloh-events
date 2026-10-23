@@ -14,6 +14,25 @@ export type EventItem = {
   source: 'web' | 'email';
 };
 
+const ELEM_RE = /\b(elementary|kindergarten|pre-?k|(1st|2nd|3rd|4th|5th) grade)\b/i;
+export const isElementary = (e: EventItem) => e.category === 'Elementary School' || ELEM_RE.test(e.title);
+
+/** Every event on every day (no past filter), elementary first, then all-day, then by time. */
+export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
+  const map = new Map<string, EventItem[]>();
+  const add = (k: string, e: EventItem) => map.set(k, [...(map.get(k) ?? []), e]);
+  for (const e of events) {
+    if (e.allDay) {
+      const last = parseDay(e.end);
+      for (let d = parseDay(e.start), n = 0; d <= last && n < 31; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1), n++) add(dayKey(d), e);
+    } else add(dayKey(startDate(e)), e);
+  }
+  for (const list of map.values()) {
+    list.sort((a, b) => Number(isElementary(b)) - Number(isElementary(a)) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
+  }
+  return map;
+}
+
 type Feed = { generated: string; events: EventItem[] };
 const CACHE_KEY = 'events-cache-v1';
 

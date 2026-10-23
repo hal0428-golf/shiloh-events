@@ -21,11 +21,9 @@ def _norm(t):
     return re.sub(r"[^a-z0-9]+", " ", t.lower()).strip()
 
 
-def is_current_or_upcoming(ev, now):
-    end = ev["end"]
-    if ev["allDay"]:
-        return end >= now.date().isoformat()
-    return datetime.fromisoformat(end) >= now
+def in_window(ev, now):
+    """Keep everything from the 1st of the current month on, so the month view is complete."""
+    return ev["end"][:10] >= now.date().replace(day=1).isoformat()
 
 
 def merge(web, mail, now):
@@ -36,7 +34,7 @@ def merge(web, mail, now):
         dup = any(d == _day(e) and (n in t or t in n) for d, t in seen)
         if not dup:
             merged.append(e)
-    merged = [e for e in merged if is_current_or_upcoming(e, now)]
+    merged = [e for e in merged if in_window(e, now)]
     merged.sort(key=lambda e: (_day(e), e["allDay"] is False, e["start"], e["title"]))
     return merged
 

@@ -25,17 +25,21 @@ def test_all_day_and_multiday():
     g = evs["Golf Girls State @ Searcy High School"]
     assert g["allDay"] and g["start"] == g["end"] == "2026-09-29"
     assert g["location"] == "Searcy High School"
+    assert g["category"] == "Athletics"
     c = evs["B3 9th Grade Father Son Campout"]
     assert c["start"] == "2026-10-25" and c["end"] == "2026-10-26"
+    assert c["category"] == "Elementary School"
 
 
 def test_merge_filters_past_and_dedupes_email():
-    now = datetime(2026, 9, 29, 8, 0, tzinfo=ZoneInfo("America/Chicago"))
+    now = datetime(2026, 10, 2, 8, 0, tzinfo=ZoneInfo("America/Chicago"))
     web = parse_month(HTML)
-    mail = [{"id": "e1", "title": "Golf Girls State", "start": "2026-09-29", "end": "2026-09-29", "allDay": True, "source": "email"},
+    mail = [{"id": "e1", "title": "Father Son Campout", "start": "2026-10-25", "end": "2026-10-25", "allDay": True, "source": "email"},
             {"id": "e2", "title": "Bake Sale", "start": "2026-10-02", "end": "2026-10-02", "allDay": True, "source": "email"}]
     out = merge(web, mail, now)
     titles = [e["title"] for e in out]
-    assert "8th grade SALT" not in titles  # already ended
+    assert "8th grade SALT" not in titles  # September, before the window
+    web = web + [{"id": "x", "title": "Oct 1 thing", "start": "2026-10-01", "end": "2026-10-01", "allDay": True, "source": "web"}]
+    assert "Oct 1 thing" in [e["title"] for e in merge(web, mail, now)]  # earlier this month is kept
     assert "Bake Sale" in titles
-    assert titles.count("Golf Girls State @ Searcy High School") == 1 and "Golf Girls State" not in titles
+    assert titles.count("B3 9th Grade Father Son Campout") == 1 and "Father Son Campout" not in titles
