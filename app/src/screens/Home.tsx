@@ -37,13 +37,17 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
     setRefreshing(false);
   };
 
-  // Swipe left/right on the month grid to change months.
+  // Swipe left/right on the month grid to change months. Limits live in a ref so
+  // the handler never goes stale (e.g. after a live code refresh).
+  const limits = useRef({ min: base, max: base + MAX_AHEAD });
+  limits.current = { min: base, max: base + MAX_AHEAD };
   const pan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 25 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
       onPanResponderRelease: (_, g) => {
-        if (g.dx < -50) setCursor((c) => Math.min(c + 1, base + MAX_AHEAD));
-        else if (g.dx > 50) setCursor((c) => Math.max(c - 1, base));
+        const { min, max } = limits.current;
+        if (g.dx < -50) setCursor((c) => Math.min(c + 1, max));
+        else if (g.dx > 50) setCursor((c) => Math.max(c - 1, min));
       },
     }),
   ).current;
