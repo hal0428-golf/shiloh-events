@@ -1,0 +1,104 @@
+{
+ "generated": "2026-10-23T12:00:00-05:00",
+ "events": [
+  {
+   "id": "seed0",
+   "title": "Praying Moms",
+   "start": "2026-10-23",
+   "end": "2026-10-23",
+   "allDay": true,
+   "category": null,
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed1",
+   "title": "Youth Football - Semifinals",
+   "start": "2026-10-24",
+   "end": "2026-10-24",
+   "allDay": true,
+   "category": "Athletics",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed2",
+   "title": "Wrestling vs. Har-Ber Boys and Girls",
+   "start": "2026-10-24",
+   "end": "2026-10-24",
+   "allDay": true,
+   "category": "Athletics",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed3",
+   "title": "B3 9th Grade Father Son Campout",
+   "start": "2026-10-25",
+   "end": "2026-10-26",
+   "allDay": true,
+   "category": "Secondary School",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed4",
+   "title": "Volleyball State Tournament @ Northside (V)",
+   "start": "2026-10-26",
+   "end": "2026-10-26",
+   "allDay": true,
+   "category": "Athletics",
+   "location": "Northside",
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed5",
+   "title": "Fall Carnival",
+   "start": "2026-10-27",
+   "end": "2026-10-27",
+   "allDay": true,
+   "category": null,
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed6",
+   "title": "5th Grade Musical Auditions",
+   "start": "2026-10-28",
+   "end": "2026-10-28",
+   "allDay": true,
+   "category": "Elementary",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed7",
+   "title": "6th Grade ONSC Field Trip",
+   "start": "2026-10-29",
+   "end": "2026-10-29",
+   "allDay": true,
+   "category": "Middle School",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "seed8",
+   "title": "Football @ Bentonville West (V)",
+   "start": "2026-10-30",
+   "end": "2026-10-30",
+   "allDay": true,
+   "category": "Athletics",
+   "location": "Bentonville West",
+   "description": null,
+   "source": "web"
+  }
+ ]
+}
