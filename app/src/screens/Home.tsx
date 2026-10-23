@@ -49,7 +49,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
   const shown = useMemo(() => (events ?? []).filter(visibleEvent), [events]);
 
   const chips = useMemo(() => {
-    const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => c !== 'Elementary School'))).sort();
+    const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => c !== 'Elementary School' && c !== 'All School Calendar'))).sort();
     return [{ id: 'All', label: 'All' }, { id: ELEM, label: 'Elementary ★' }, ...cats.map((c) => ({ id: c, label: c }))];
   }, [shown]);
 
