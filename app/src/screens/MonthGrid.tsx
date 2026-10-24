@@ -21,7 +21,7 @@ export default function MonthGrid({
     <View style={{ flex: 1, paddingHorizontal: 4 }}>
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAYS.map((d, i) => (
-          <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#1a1400', backgroundColor: t.month, fontSize: 11, fontWeight: '800', paddingVertical: 3, marginBottom: 2, marginHorizontal: 0.5, overflow: 'hidden', borderRadius: 3 }}>{d}</Text>
+          <Text key={i} style={{ flex: 1, textAlign: 'center', color: t.month, backgroundColor: i >= 5 ? t.cellWeekend : t.cellWeekday, fontSize: 11, fontWeight: '800', paddingVertical: 3, marginBottom: 2, marginHorizontal: 0.5, overflow: 'hidden', borderRadius: 3 }}>{d}</Text>
         ))}
       </View>
       <View style={{ flex: 1 }} onLayout={(e) => setRowH(e.nativeEvent.layout.height / weeks)}>
@@ -45,8 +45,8 @@ export default function MonthGrid({
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
                     backgroundColor: hasHol ? t.holTint : hasElem ? t.elemTint : c >= 5 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
                   }}>
-                  <View style={[st.num, isToday && { backgroundColor: t.accent }]}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: isToday ? t.bg : t.cellText }}>{n}</Text>
+                  <View style={[st.num, isToday && { backgroundColor: '#ffd60a' }]}>
+                    <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : t.cellText }}>{n}</Text>
                   </View>
                   {list.slice(0, shown).map((e, i) => {
                     const k = kindStyle(t, kindOf(e));
