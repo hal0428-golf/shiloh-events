@@ -121,7 +121,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
             const elem = c.id === ELEM;
             return (
               <Pressable key={c.id} onPress={() => setFilter(c.id)} style={[s.chip, { backgroundColor: on ? (elem ? t.elem : t.accent) : elem ? t.elemTint : t.chip }]}>
-                <Text style={{ color: on ? (elem ? t.elemText : onAccent) : t.text, fontSize: 13, fontWeight: '600' }}>{c.label}</Text>
+                <Text style={{ color: elem ? '#000000' : on ? onAccent : t.text, fontSize: 13, fontWeight: '600' }}>{c.label}</Text>
               </Pressable>
             );
           })}
