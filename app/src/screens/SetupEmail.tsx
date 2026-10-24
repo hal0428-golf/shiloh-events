@@ -4,25 +4,25 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { FORWARD_ADDRESS } from '../config';
 import { useTheme } from '../theme';
 
-const GUIDES: Record<string, string[]> = {
+const guides = (addr: string): Record<string, string[]> => ({
   Gmail: [
     'Open Gmail on a computer or in Safari (filters can’t be made in the iPhone app).',
-    'Settings (gear) › See all settings › Forwarding and POP/IMAP › Add a forwarding address. Paste the address above.',
-    'Gmail emails a confirmation code to that address. Ask Dad to read it to you, then enter it in Gmail.',
-    'Settings › Filters and Blocked Addresses › Create a new filter. In From, type shilohsaints.org. Add any other Shiloh senders with OR.',
-    'Click Create filter, tick “Forward it to” and pick the address, then Create filter.',
+    `Settings (gear) › See all settings › Forwarding and POP/IMAP › Add a forwarding address. Enter ${addr} and click Next.`,
+    `Gmail sends a confirmation code to ${addr}. Ask Dad to read it to you, then enter it in Gmail and click Verify.`,
+    'Settings › Filters and Blocked Addresses › Create a new filter. In the From box, type shilohsaints.org. If Shiloh emails come from another address too, add it with OR.',
+    `Click Create filter, tick “Forward it to”, choose ${addr}, then click Create filter.`,
   ],
   Outlook: [
     'Open Outlook on the web › Settings (gear) › Mail › Rules › Add new rule.',
     'Condition: From contains shilohsaints.org.',
-    'Action: Forward to, and paste the address above. Save.',
+    `Action: Forward to ${addr}. Save.`,
   ],
   iCloud: [
     'Open icloud.com/mail › gear icon › Rules › Add a Rule.',
     'If a message is from (contains) shilohsaints.org.',
-    'Then forward to the address above. Done.',
+    `Then forward to ${addr}. Done.`,
   ],
-};
+});
 
 export default function SetupEmail({ onBack }: { onBack: () => void }) {
   const t = useTheme();
@@ -44,13 +44,13 @@ export default function SetupEmail({ onBack }: { onBack: () => void }) {
         </Pressable>
       </View>
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
-        {Object.keys(GUIDES).map((p) => (
+        {Object.keys(guides(FORWARD_ADDRESS)).map((p) => (
           <Pressable key={p} onPress={() => setProv(p)} style={[st.tab, { backgroundColor: p === prov ? t.accent : t.chip }]}>
             <Text style={{ color: p === prov ? (t.bg === '#0d1117' ? '#0d1117' : '#fff') : t.text, fontWeight: '600' }}>{p}</Text>
           </Pressable>
         ))}
       </View>
-      {GUIDES[prov].map((step, i) => (
+      {guides(FORWARD_ADDRESS)[prov].map((step, i) => (
         <View key={i} style={{ flexDirection: 'row', marginTop: 14 }}>
           <Text style={{ color: t.accent, fontWeight: '800', width: 24 }}>{i + 1}.</Text>
           <Text style={{ color: t.text, fontSize: 15, flex: 1 }}>{step}</Text>
