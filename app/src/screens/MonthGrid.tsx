@@ -29,7 +29,7 @@ export default function MonthGrid({
           <View key={w} style={{ flex: 1, flexDirection: 'row' }}>
             {Array.from({ length: 7 }, (_, c) => {
               const n = w * 7 + c - offset + 1;
-              if (n < 1 || n > days) return <View key={c} style={{ flex: 1, backgroundColor: '#23272e' }} />;
+              if (n < 1 || n > days) return <View key={c} style={{ flex: 1, backgroundColor: t.cellWeekend }} />;
               const key = dayKey(new Date(year, month, n));
               const list = byDay.get(key) ?? [];
               const hasElem = list.some(isFifth);
