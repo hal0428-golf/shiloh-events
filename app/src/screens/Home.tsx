@@ -43,11 +43,16 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
   limits.current = { min: base, max: base + MAX_AHEAD };
   const pan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 25 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
+      // Capture phase so the swipe wins over the day squares; starts after a short, mostly-sideways drag.
+      onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy) * 1.3,
+      onPanResponderTerminationRequest: () => false,
       onPanResponderRelease: (_, g) => {
         const { min, max } = limits.current;
-        if (g.dx < -50) setCursor((c) => Math.min(c + 1, max));
-        else if (g.dx > 50) setCursor((c) => Math.max(c - 1, min));
+        // Short drag, or a quick flick, changes the month.
+        const left = g.dx < -35 || (g.dx < -15 && g.vx < -0.35);
+        const right = g.dx > 35 || (g.dx > 15 && g.vx > 0.35);
+        if (left) setCursor((c) => Math.min(c + 1, max));
+        else if (right) setCursor((c) => Math.max(c - 1, min));
       },
     }),
   ).current;
