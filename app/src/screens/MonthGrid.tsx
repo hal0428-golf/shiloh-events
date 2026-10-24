@@ -47,7 +47,7 @@ export default function MonthGrid({
                     backgroundColor: isToday ? '#8e949c' : hasHol ? t.holTint : hasElem ? t.elemTint : c >= 5 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
                   }}>
                   <View style={st.num}>
-                    <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : '#9aa4b2' }}>{n}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : yellowCell ? '#000000' : '#9aa4b2' }}>{n}</Text>
                   </View>
                   {list.slice(0, shown).map((e, i) => {
                     const kind = kindOf(e);
