@@ -83,7 +83,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
     <View style={{ flex: 1, backgroundColor: t.bg }}>
       <View style={s.header}>
         <View style={{ flex: 1 }}>
-          <Text style={[s.h1, { color: t.elem }]}>Events</Text>
+          <Text style={[s.h1, { color: t.hol }]}>Events</Text>
           <Text style={{ color: t.sub, fontSize: 12 }}>{SCHOOL_NAME}</Text>
         </View>
         <Pressable onPress={onSetup} style={[s.btn, { backgroundColor: t.chip }]}>

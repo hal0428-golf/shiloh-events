@@ -43,10 +43,10 @@ export default function MonthGrid({
                   onPress={() => onDay(key)}
                   style={{
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
-                    backgroundColor: hasHol ? t.holTint : hasElem ? t.elemTint : t.card, overflow: 'hidden',
+                    backgroundColor: hasHol ? t.holTint : hasElem ? t.elemTint : c === 0 || c === 6 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
                   }}>
                   <View style={[st.num, isToday && { backgroundColor: t.accent }]}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: isToday ? t.bg : t.text }}>{n}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: isToday ? t.bg : t.cellText }}>{n}</Text>
                   </View>
                   {list.slice(0, shown).map((e, i) => {
                     const k = kindStyle(t, kindOf(e));
@@ -56,7 +56,7 @@ export default function MonthGrid({
                       </View>
                     );
                   })}
-                  {extra > 0 && <Text style={{ fontSize: 9, color: t.sub, fontWeight: '700', paddingLeft: 2 }}>+{extra}</Text>}
+                  {extra > 0 && <Text style={{ fontSize: 9, color: t.cellText, fontWeight: '700', paddingLeft: 2 }}>+{extra}</Text>}
                 </Pressable>
               );
             })}
