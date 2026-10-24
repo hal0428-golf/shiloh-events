@@ -37,6 +37,7 @@ export default function MonthGrid({
               const shown = list.length > maxBars ? Math.max(maxBars - 1, 0) : list.length;
               const extra = list.length - shown;
               const isToday = key === todayKey;
+              const yellowCell = !isToday && !hasHol && hasElem;
               return (
                 <Pressable
                   key={c}
@@ -49,7 +50,8 @@ export default function MonthGrid({
                     <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : '#9aa4b2' }}>{n}</Text>
                   </View>
                   {list.slice(0, shown).map((e, i) => {
-                    const k = kindStyle(t, kindOf(e));
+                    const kind = kindOf(e);
+                    const k = yellowCell && kind === 'elem' ? { bg: '#1a1400', fg: '#ffd60a', edge: '#1a1400', bold: true } : kindStyle(t, kind);
                     return (
                       <View key={e.id + i} style={[st.bar, { backgroundColor: k.bg }]}>
                         <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: k.bold ? '700' : '500', color: k.fg }}>{e.title}</Text>
