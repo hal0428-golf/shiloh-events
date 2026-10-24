@@ -43,7 +43,7 @@ export default function MonthGrid({
                   onPress={() => onDay(key)}
                   style={{
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
-                    backgroundColor: isToday ? '#ffd60a' : hasHol ? t.holTint : hasElem ? t.elemTint : c >= 5 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
+                    backgroundColor: isToday ? '#d3d7dd' : hasHol ? t.holTint : hasElem ? t.elemTint : c >= 5 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
                   }}>
                   <View style={st.num}>
                     <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : '#9aa4b2' }}>{n}</Text>
