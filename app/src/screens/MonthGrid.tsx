@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EventItem, dayKey, isFifth, isHoliday, kindOf } from '../lib';
 import { kindStyle, useTheme } from '../theme';
 
-const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const BAR_H = 12;
 
 export default function MonthGrid({
@@ -11,7 +11,7 @@ export default function MonthGrid({
 }: { byDay: Map<string, EventItem[]>; year: number; month: number; onDay: (key: string) => void }) {
   const t = useTheme();
   const [rowH, setRowH] = useState(80);
-  const offset = (new Date(year, month, 1).getDay() + 6) % 7;
+  const offset = new Date(year, month, 1).getDay();
   const days = new Date(year, month + 1, 0).getDate();
   const weeks = Math.ceil((offset + days) / 7);
   const todayKey = dayKey(new Date());
@@ -21,7 +21,7 @@ export default function MonthGrid({
     <View style={{ flex: 1, paddingHorizontal: 4 }}>
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAYS.map((d, i) => (
-          <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#9aa4b2', backgroundColor: i >= 5 ? t.cellWeekend : t.cellWeekday, fontSize: 11, fontWeight: '800', paddingVertical: 3, marginBottom: 2, marginHorizontal: 0.5, overflow: 'hidden', borderRadius: 3 }}>{d}</Text>
+          <Text key={i} style={{ flex: 1, textAlign: 'center', color: '#9aa4b2', backgroundColor: i === 0 || i === 6 ? t.cellWeekend : t.cellWeekday, fontSize: 11, fontWeight: '800', paddingVertical: 3, marginBottom: 2, marginHorizontal: 0.5, overflow: 'hidden', borderRadius: 3 }}>{d}</Text>
         ))}
       </View>
       <View style={{ flex: 1 }} onLayout={(e) => setRowH(e.nativeEvent.layout.height / weeks)}>
@@ -44,7 +44,7 @@ export default function MonthGrid({
                   onPress={() => onDay(key)}
                   style={{
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
-                    backgroundColor: isToday ? '#8e949c' : hasHol ? t.holTint : hasElem ? t.elemTint : c >= 5 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
+                    backgroundColor: isToday ? '#8e949c' : hasHol ? t.holTint : hasElem ? t.elemTint : c === 0 || c === 6 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
                   }}>
                   <View style={st.num}>
                     <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : yellowCell ? '#000000' : '#9aa4b2' }}>{n}</Text>
