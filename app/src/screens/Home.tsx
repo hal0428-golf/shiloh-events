@@ -1,15 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, eventsByDay, isFifth, isHoliday, loadEvents, visibleEvent } from '../lib';
+import { EventItem, dayKey, eventsByDay, isFifth, isHoliday, loadEvents, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
+import DayView from './DayView';
 import EventList from './EventList';
 import MonthGrid from './MonthGrid';
 
 const ELEM = '__elementary';
 const NO_CHIP = ['All School Calendar', 'Middle School', 'Secondary School', 'Elementary School'];
 const MAX_AHEAD = 9; // months ahead the feed covers
+
+function Arrow({ dir, enabled, onPress }: { dir: 'prev' | 'next'; enabled: boolean; onPress: () => void }) {
+  const t = useTheme();
+  return (
+    <Pressable
+      disabled={!enabled}
+      onPress={onPress}
+      hitSlop={8}
+      style={({ pressed }) => [{ width: 34, height: 34, borderRadius: 17, backgroundColor: t.hol, alignItems: 'center', justifyContent: 'center', marginHorizontal: 4, opacity: enabled ? (pressed ? 0.7 : 1) : 0.3 }]}>
+      <Text style={{ color: t.holText, fontSize: 24, fontWeight: '800', lineHeight: 28, marginTop: -2 }}>{dir === 'prev' ? '‹' : '›'}</Text>
+    </Pressable>
+  );
+}
 
 export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => void; onSetup: () => void }) {
   const t = useTheme();
@@ -20,7 +34,8 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
   const [checked, setChecked] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('All');
-  const [view, setView] = useState<'month' | 'list'>('month');
+  const [view, setView] = useState<'month' | 'day' | 'list'>('month');
+  const [dayCur, setDayCur] = useState(() => new Date(now.getFullYear(), now.getMonth(), now.getDate()));
   const [cursor, setCursor] = useState(base); // year*12 + month
   const [day, setDay] = useState<string | null>(null);
 
@@ -74,7 +89,15 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
 
   const year = Math.floor(cursor / 12);
   const month = cursor % 12;
-  const monthName = new Date(year, month, 1).toLocaleDateString([], { month: 'long', year: 'numeric' });
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const minDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const maxDay = new Date(now.getFullYear(), now.getMonth() + MAX_AHEAD + 1, 0);
+  const shift = (n: number) => setDayCur((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n));
+  const canPrevDay = dayCur > minDay;
+  const canNextDay = dayCur < maxDay;
+  const headerDate = view === 'month' ? new Date(year, month, 1) : view === 'day' ? dayCur : now;
+  const monthName = headerDate.toLocaleDateString([], { month: 'long', year: 'numeric' });
+  const dayLabel = dayCur.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
   const onAccent = t.bg === '#0d1117' ? '#0d1117' : '#fff';
   const fmt = (d: Date) => d.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   const statusText = refreshing ? 'Refreshing…'
@@ -87,34 +110,36 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
   return (
     <View style={{ flex: 1, backgroundColor: t.bg }}>
       <View style={s.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={[s.h1, { color: t.hol }]}>Events</Text>
-          <Text style={{ color: t.sub, fontSize: 12 }}>{SCHOOL_NAME}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+          <Text style={[s.h1, { color: t.hol, flex: 1 }]} numberOfLines={1}>Events</Text>
+          <Pressable onPress={() => { setCursor(base); setDayCur(today0); }} hitSlop={8}>
+            <Text style={[s.h1, { color: t.month }]} numberOfLines={1}>{monthName}</Text>
+          </Pressable>
         </View>
-        <Pressable onPress={onSetup} style={[s.btn, { backgroundColor: t.chip }]}>
-          <Text style={{ color: t.accent, fontWeight: '600', fontSize: 13 }}>Connect email</Text>
-        </Pressable>
+        <Text style={{ color: t.sub, fontSize: 12 }} numberOfLines={1}>{SCHOOL_NAME}</Text>
       </View>
 
       <View style={s.bar}>
         <View style={[s.seg, { backgroundColor: t.chip }]}>
-          {(['month', 'list'] as const).map((v) => (
+          {(['month', 'day', 'list'] as const).map((v) => (
             <Pressable key={v} onPress={() => setView(v)} style={[s.segItem, view === v && { backgroundColor: t.accent }]}>
-              <Text style={{ color: view === v ? onAccent : t.text, fontWeight: '600', fontSize: 13 }}>{v === 'month' ? 'Month' : 'List'}</Text>
+              <Text style={{ color: view === v ? onAccent : t.text, fontWeight: '600', fontSize: 13 }}>{v === 'month' ? 'Month' : v === 'day' ? 'Day' : 'List'}</Text>
             </Pressable>
           ))}
         </View>
         {view === 'month' && (
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 56 }}>
+            <Arrow dir="prev" enabled={canPrev} onPress={() => setCursor(cursor - 1)} />
+            <Arrow dir="next" enabled={canNext} onPress={() => setCursor(cursor + 1)} />
+          </View>
+        )}
+        {view === 'day' && (
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Pressable disabled={!canPrev} onPress={() => setCursor(cursor - 1)} hitSlop={10}>
-              <Text style={{ color: canPrev ? t.accent : t.line, fontSize: 26, paddingHorizontal: 10 }}>‹</Text>
+            <Arrow dir="prev" enabled={canPrevDay} onPress={() => shift(-1)} />
+            <Pressable onPress={() => setDayCur(today0)}>
+              <Text style={{ color: t.month, fontSize: 15, fontWeight: '800', textAlign: 'center' }} numberOfLines={1}>{dayLabel}</Text>
             </Pressable>
-            <Pressable onPress={() => setCursor(base)}>
-              <Text style={{ color: t.month, fontSize: 16, fontWeight: '800', minWidth: 130, textAlign: 'center' }}>{monthName}</Text>
-            </Pressable>
-            <Pressable disabled={!canNext} onPress={() => setCursor(cursor + 1)} hitSlop={10}>
-              <Text style={{ color: canNext ? t.accent : t.line, fontSize: 26, paddingHorizontal: 10 }}>›</Text>
-            </Pressable>
+            <Arrow dir="next" enabled={canNextDay} onPress={() => shift(1)} />
           </View>
         )}
       </View>
@@ -135,6 +160,8 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
 
       {view === 'month'
         ? <View style={{ flex: 1 }} {...pan.panHandlers}><MonthGrid byDay={byDay} year={year} month={month} onDay={setDay} /></View>
+        : view === 'day'
+        ? <DayView events={byDay.get(dayKey(dayCur)) ?? []} onOpen={onOpen} />
         : <EventList events={filtered} onOpen={onOpen} refreshing={refreshing} onRefresh={refresh} />}
 
       <Pressable onPress={refresh} disabled={refreshing} style={s.status}>
@@ -146,13 +173,13 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
 }
 
 const s = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 },
-  h1: { fontSize: 28, fontWeight: '800' },
+  header: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 },
+  h1: { fontSize: 22, fontWeight: '800' },
   status: { paddingVertical: 10, paddingHorizontal: 12 },
   btn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10 },
   bar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 4 },
   seg: { flexDirection: 'row', borderRadius: 9, padding: 2 },
-  segItem: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 7 },
+  segItem: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 7 },
   chips: { paddingHorizontal: 12, paddingVertical: 6, gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
 });
