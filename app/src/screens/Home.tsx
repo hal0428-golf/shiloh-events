@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
 import { EventItem, dayKey, eventsByDay, isFifth, isHoliday, loadEvents, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
@@ -116,7 +116,9 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
             <Text style={[s.h1, { color: t.month, fontSize: 24, fontWeight: 'normal' }]} numberOfLines={1}>{monthName}</Text>
           </Pressable>
         </View>
-        <Text style={{ color: t.sub, fontSize: 12 }} numberOfLines={1}>{SCHOOL_NAME}</Text>
+        <Pressable onPress={() => Linking.openURL('https://shilohsaints.org')} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
+          <Text style={{ color: t.accent, fontSize: 12, textDecorationLine: 'underline' }} numberOfLines={1}>{SCHOOL_NAME}</Text>
+        </Pressable>
       </View>
 
       <View style={s.bar}>
