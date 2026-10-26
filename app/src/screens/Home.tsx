@@ -111,9 +111,9 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
     <View style={{ flex: 1, backgroundColor: t.bg }}>
       <View style={s.header}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-          <Text style={[s.h1, { color: t.hol, flex: 1 }]} numberOfLines={1}>Events</Text>
+          <Text style={[s.h1, { color: t.hol, flex: 1, fontSize: 24, fontWeight: 'normal' }]} numberOfLines={1}>Events</Text>
           <Pressable onPress={() => { setCursor(base); setDayCur(today0); }} hitSlop={8}>
-            <Text style={[s.h1, { color: t.month }]} numberOfLines={1}>{monthName}</Text>
+            <Text style={[s.h1, { color: t.month, fontSize: 24, fontWeight: 'normal' }]} numberOfLines={1}>{monthName}</Text>
           </Pressable>
         </View>
         <Text style={{ color: t.sub, fontSize: 12 }} numberOfLines={1}>{SCHOOL_NAME}</Text>
