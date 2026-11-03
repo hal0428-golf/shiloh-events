@@ -25,8 +25,10 @@ const GAME_RE = /(@|\bvs\.?|tournament|invitational|meet\b|state|classic|confere
 const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memorial day|presidents|good friday|easter monday|new year|teacher work day|virtual learning day|last day of school)/i;
 
 export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
-export type Kind = 'holiday' | 'elem' | 'other';
-export const kindOf = (e: EventItem): Kind => (isHoliday(e) ? 'holiday' : isFifth(e) ? 'elem' : 'other');
+export const isEmail = (e: EventItem) => e.source === 'email';
+export type Kind = 'email' | 'holiday' | 'elem' | 'other';
+/** Email events are orange even when they are also 5th grade or a holiday. */
+export const kindOf = (e: EventItem): Kind => (isEmail(e) ? 'email' : isHoliday(e) ? 'holiday' : isFifth(e) ? 'elem' : 'other');
 
 /** For 5th grade, only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
 function sportAllowed(title: string): boolean {
@@ -51,7 +53,7 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
     } else add(dayKey(startDate(e)), e);
   }
   for (const list of map.values()) {
-    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isFifth(e) ? 1 : 0);
+    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isFifth(e) || isEmail(e) ? 1 : 0);
     list.sort((a, b) => rank(b) - rank(a) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
   }
   return map;
