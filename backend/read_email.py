@@ -117,6 +117,16 @@ def fetch_email_events():
 
     client = anthropic.Anthropic()
     cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
+    try:
+        _read_inbox(client, cache, host, user, pw)
+    except (imaplib.IMAP4.error, OSError) as e:  # bad password, IMAP off, network: keep website events flowing
+        print("::warning::email: mailbox read failed, using cached email events:", e)
+    CACHE.parent.mkdir(exist_ok=True)
+    CACHE.write_text(json.dumps(cache, indent=1))
+    return [ev for evs in cache.values() for ev in evs]
+
+
+def _read_inbox(client, cache, host, user, pw):
     since = (datetime.now(TZ) - timedelta(days=LOOKBACK_DAYS)).strftime("%d-%b-%Y")
     imap = imaplib.IMAP4_SSL(host)
     imap.login(user, pw)
@@ -139,6 +149,3 @@ def fetch_email_events():
             continue
         cache[mid] = [ev for i, it in enumerate(items) if (ev := _normalize(it, mid, i))]
     imap.logout()
-    CACHE.parent.mkdir(exist_ok=True)
-    CACHE.write_text(json.dumps(cache, indent=1))
-    return [ev for evs in cache.values() for ev in evs]
