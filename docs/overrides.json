@@ -1,5 +1,14 @@
 {
  "email_9144e1d67d81": {
   "deleted": true
+ },
+ "manual_mw0wt3g9qid5": {
+  "title": "Test",
+  "location": null,
+  "description": "New meeting",
+  "allDay": true,
+  "start": "2026-11-05",
+  "end": "2026-11-05",
+  "added": true
  }
 }
