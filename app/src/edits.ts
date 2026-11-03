@@ -93,9 +93,10 @@ export async function saveOverride(id: string, o: Override, title: string): Prom
   if (!token) throw new Error('No editing key on this phone.');
   for (let attempt = 0; attempt < 3; attempt++) {
     const { ov, sha } = await fetchRemote(token);
+    const verb = o.deleted ? 'Delete' : o.added && !(id in ov) ? 'Add' : 'Edit';
     ov[id] = o;
     const body = {
-      message: `${o.deleted ? 'Delete' : 'Edit'} email event: ${title}`,
+      message: `${verb} event: ${o.title ?? title}`,
       content: toBase64(JSON.stringify(ov, null, 1) + '\n'),
       ...(sha ? { sha } : {}),
     };
