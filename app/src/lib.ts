@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import seed from '../assets/seed-events.json';
 import { EVENTS_URL } from './config';
+import { applyOverrides, loadOverrides } from './edits';
 
 export type EventItem = {
   id: string;
@@ -118,6 +119,11 @@ export function groupByDay(events: EventItem[], now = new Date()) {
 }
 
 export async function loadEvents(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
+  const [r, ov] = await Promise.all([loadFeed(), loadOverrides()]);
+  return { ...r, events: applyOverrides(r.events, ov) };
+}
+
+async function loadFeed(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
   try {
     if (EVENTS_URL.includes('YOUR-')) throw new Error('events URL not configured');
     const r = await fetch(`${EVENTS_URL}?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } });

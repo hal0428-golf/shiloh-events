@@ -14,7 +14,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
-        {selected ? <EventDetail event={selected} onBack={() => setSelected(null)} />
+        {selected ? <EventDetail event={selected} onBack={() => setSelected(null)} onChanged={setSelected} />
           : setup ? <SetupEmail onBack={() => setSetup(false)} />
           : <Home onOpen={setSelected} onSetup={() => setSetup(true)} />}
         <StatusBar style="auto" />

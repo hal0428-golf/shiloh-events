@@ -30,6 +30,9 @@
         "projectId": "e3ca85a6-d576-427a-accd-eca1d17e8d1c"
       }
     },
-    "owner": "hal0428"
+    "owner": "hal0428",
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
