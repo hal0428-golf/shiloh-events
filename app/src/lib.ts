@@ -12,7 +12,7 @@ export type EventItem = {
   category: string | null;
   location: string | null;
   description: string | null;
-  source: 'web' | 'email';
+  source: 'web' | 'email' | 'manual';
 };
 
 const FIFTH_RE = /\b(5th|fifth)\b/i;
@@ -26,9 +26,10 @@ const GAME_RE = /(@|\bvs\.?|tournament|invitational|meet\b|state|classic|confere
 const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memorial day|presidents|good friday|easter monday|new year|teacher work day|virtual learning day|last day of school)/i;
 
 export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
-export const isEmail = (e: EventItem) => e.source === 'email';
+/** From a forwarded email or added in the app; these are orange and can be edited. */
+export const isEmail = (e: EventItem) => e.source !== 'web';
 export type Kind = 'email' | 'holiday' | 'elem' | 'other';
-/** Email events are orange even when they are also 5th grade or a holiday. */
+/** Email/added events are orange even when they are also 5th grade or a holiday. */
 export const kindOf = (e: EventItem): Kind => (isEmail(e) ? 'email' : isHoliday(e) ? 'holiday' : isFifth(e) ? 'elem' : 'other');
 
 /** For 5th grade, only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
@@ -36,7 +37,7 @@ function sportAllowed(title: string): boolean {
   return /\byouth\b/i.test(title);
 }
 export function visibleEvent(e: EventItem): boolean {
-  if (isFifth(e) || isHoliday(e)) return true;
+  if (e.source === 'manual' || isFifth(e) || isHoliday(e)) return true;
   if (e.category && HIDDEN_CATEGORIES.includes(e.category)) return false;
   if (LOWER_GRADE_RE.test(e.title)) return false;
   if (SPORT_RE.test(e.title) && GAME_RE.test(e.title) && !sportAllowed(e.title)) return false;

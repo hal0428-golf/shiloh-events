@@ -3,8 +3,9 @@ import * as SecureStore from 'expo-secure-store';
 import { GITHUB_REPO, OVERRIDES_PATH } from './config';
 import type { EventItem } from './lib';
 
-/** A shared change to one email event, keyed by event id in docs/overrides.json. */
+/** A shared change to one email event, or an event added in the app (added: true), keyed by event id in docs/overrides.json. */
 export type Override = {
+  added?: boolean;
   deleted?: boolean;
   title?: string;
   start?: string;
@@ -31,16 +32,34 @@ const headers = (token: string | null) => ({
   ...(token ? { Authorization: `Bearer ${token}` } : {}),
 });
 
+export const ADDED_CATEGORY = 'Added';
+
 export function applyOverrides(events: EventItem[], ov: Overrides): EventItem[] {
-  return events
+  const edited = events
     .filter((e) => !ov[e.id]?.deleted)
     .map((e) => {
       const o = ov[e.id];
       if (!o) return e;
-      const { deleted, ...fields } = o;
+      const { deleted, added, ...fields } = o;
       return { ...e, ...fields };
     });
+  const added: EventItem[] = Object.entries(ov)
+    .filter(([, o]) => o.added && !o.deleted && o.title && o.start)
+    .map(([id, o]) => ({
+      id,
+      title: o.title!,
+      start: o.start!,
+      end: o.end ?? o.start!,
+      allDay: o.allDay ?? true,
+      category: ADDED_CATEGORY,
+      location: o.location ?? null,
+      description: o.description ?? null,
+      source: 'manual',
+    }));
+  return [...edited, ...added];
 }
+
+export const newEventId = () => `manual_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 async function readJson<T>(key: string): Promise<T | null> {
   try { const s = await AsyncStorage.getItem(key); return s ? (JSON.parse(s) as T) : null; } catch { return null; }

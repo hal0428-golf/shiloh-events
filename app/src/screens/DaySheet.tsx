@@ -3,8 +3,8 @@ import { EventItem, formatTime, kindOf, parseDay } from '../lib';
 import { kindStyle, useTheme } from '../theme';
 
 export default function DaySheet({
-  dayKey, events, onClose, onOpen,
-}: { dayKey: string | null; events: EventItem[]; onClose: () => void; onOpen: (e: EventItem) => void }) {
+  dayKey, events, onClose, onOpen, onAdd,
+}: { dayKey: string | null; events: EventItem[]; onClose: () => void; onOpen: (e: EventItem) => void; onAdd: (day: string) => void }) {
   const t = useTheme();
   return (
     <Modal visible={dayKey !== null} transparent animationType="slide" onRequestClose={onClose}>
@@ -14,6 +14,9 @@ export default function DaySheet({
           <Text style={{ flex: 1, color: t.text, fontSize: 18, fontWeight: '800' }}>
             {dayKey ? parseDay(dayKey).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }) : ''}
           </Text>
+          <Pressable onPress={() => { const d = dayKey; onClose(); if (d) onAdd(d); }} hitSlop={8} style={{ marginRight: 18 }}>
+            <Text style={{ color: t.accent, fontWeight: '700', fontSize: 16 }}>+ Add</Text>
+          </Pressable>
           <Pressable onPress={onClose}><Text style={{ color: t.accent, fontWeight: '700', fontSize: 16 }}>Done</Text></Pressable>
         </View>
         <ScrollView>

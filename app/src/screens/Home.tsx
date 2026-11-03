@@ -26,7 +26,7 @@ function Arrow({ dir, enabled, onPress }: { dir: 'prev' | 'next'; enabled: boole
   );
 }
 
-export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => void; onSetup: () => void }) {
+export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem) => void; onAdd: (day: string) => void; onSetup: () => void }) {
   const t = useTheme();
   const now = new Date();
   const base = now.getFullYear() * 12 + now.getMonth();
@@ -151,6 +151,14 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
             <Arrow dir="next" enabled={canNextDay} onPress={() => shift(1)} />
           </View>
         )}
+        {view === 'list' && <View style={{ flex: 1 }} />}
+        <Pressable
+          onPress={() => onAdd(dayKey(view === 'day' ? dayCur : cursor === base || view === 'list' ? today0 : new Date(year, month, 1)))}
+          hitSlop={8}
+          accessibilityLabel="Add event"
+          style={({ pressed }) => [{ width: 34, height: 34, borderRadius: 17, backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1 }]}>
+          <Text style={{ color: onAccent, fontSize: 24, fontWeight: '700', lineHeight: 28, marginTop: -2 }}>+</Text>
+        </Pressable>
       </View>
 
       <View style={{ flexGrow: 0 }}>
@@ -176,7 +184,7 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
       <Pressable onPress={refresh} disabled={refreshing} style={s.status}>
         <Text style={{ color: t.accent, fontSize: 12, textAlign: 'center', fontWeight: '600' }}>{statusText}</Text>
       </Pressable>
-      <DaySheet dayKey={day} events={day ? byDay.get(day) ?? [] : []} onClose={() => setDay(null)} onOpen={onOpen} />
+      <DaySheet dayKey={day} events={day ? byDay.get(day) ?? [] : []} onClose={() => setDay(null)} onOpen={onOpen} onAdd={onAdd} />
     </View>
   );
 }

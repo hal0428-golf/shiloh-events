@@ -73,14 +73,14 @@ function toOverride(f: Form): Override | string {
   return { ...base, allDay: false, start: start.toISOString(), end: end.toISOString() };
 }
 
-export default function EventDetail({ event, onBack, onChanged }: { event: EventItem; onBack: () => void; onChanged: (e: EventItem | null) => void }) {
+export default function EventDetail({ event, isNew = false, onBack, onChanged }: { event: EventItem; isNew?: boolean; onBack: () => void; onChanged: (e: EventItem | null) => void }) {
   const t = useTheme();
-  const [mode, setMode] = useState<'view' | 'edit' | 'key'>('view');
-  const [after, setAfter] = useState<'edit' | 'delete'>('edit'); // what to do once a key is entered
+  const [mode, setMode] = useState<'view' | 'edit' | 'key'>(isNew ? 'edit' : 'view');
+  const [after, setAfter] = useState<'edit' | 'delete' | 'save'>('edit'); // what to do once a key is entered
   const [form, setForm] = useState<Form>(() => toForm(event));
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
-  const isEmail = event.source === 'email';
+  const editable = event.source !== 'web';
 
   const s0 = startDate(event);
   const e0 = endDate(event);
@@ -98,7 +98,7 @@ export default function EventDetail({ event, onBack, onChanged }: { event: Event
     </Pressable>
   );
 
-  const needKey = async (next: 'edit' | 'delete') => {
+  const needKey = async (next: 'edit' | 'delete' | 'save') => {
     if (await getEditKey()) return false;
     setAfter(next);
     setMode('key');
@@ -120,10 +120,13 @@ export default function EventDetail({ event, onBack, onChanged }: { event: Event
       setBusy(false);
     }
   };
-  const save = () => {
+  const save = async () => {
     const o = toOverride(form);
     if (typeof o === 'string') return Alert.alert('Check the details', o);
-    run(o, () => { setMode('view'); onChanged({ ...event, ...o } as EventItem); });
+    if (await needKey('save')) return;
+    // An added event's entry is the whole event, so it keeps its "added" mark through edits.
+    const full = event.source === 'manual' ? { ...o, added: true } : o;
+    run(full, () => { setMode('view'); onChanged({ ...event, ...o } as EventItem); });
   };
   const remove = async () => {
     if (await needKey('delete')) return;
@@ -136,6 +139,7 @@ export default function EventDetail({ event, onBack, onChanged }: { event: Event
     if (!key.trim()) return;
     await setEditKey(key);
     setKey('');
+    if (after === 'save') { setMode('edit'); save(); return; }
     setMode('view');
     if (after === 'edit') startEdit(); else remove();
   };
@@ -157,7 +161,7 @@ export default function EventDetail({ event, onBack, onChanged }: { event: Event
   if (mode === 'key') {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => setMode('view')}><Text style={{ color: t.accent, fontSize: 16, fontWeight: '600' }}>‹ Back</Text></Pressable>
+        <Pressable onPress={() => setMode(after === 'save' ? 'edit' : 'view')}><Text style={{ color: t.accent, fontSize: 16, fontWeight: '600' }}>‹ Back</Text></Pressable>
         <Text style={{ color: t.text, fontSize: 22, fontWeight: '800', marginTop: 12 }}>Editing key</Text>
         <Text style={{ color: t.sub, fontSize: 14, marginTop: 8 }}>
           Changes are shared with everyone using the app, so this phone needs the editing key once. Paste it below.
@@ -172,8 +176,8 @@ export default function EventDetail({ event, onBack, onChanged }: { event: Event
   if (mode === 'edit') {
     return (
       <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
-        <Pressable disabled={busy} onPress={() => setMode('view')}><Text style={{ color: t.accent, fontSize: 16, fontWeight: '600' }}>‹ Cancel</Text></Pressable>
-        <Text style={{ color: t.text, fontSize: 22, fontWeight: '800', marginTop: 12 }}>Edit event</Text>
+        <Pressable disabled={busy} onPress={() => (isNew ? onBack() : setMode('view'))}><Text style={{ color: t.accent, fontSize: 16, fontWeight: '600' }}>‹ Cancel</Text></Pressable>
+        <Text style={{ color: t.text, fontSize: 22, fontWeight: '800', marginTop: 12 }}>{isNew ? 'Add event' : 'Edit event'}</Text>
         {Field({ label: 'Title', k: 'title' })}
         {Field({ label: 'Date', k: 'date', hint: '11/5/2026' })}
         {Field({ label: 'End date (if more than one day)', k: 'endDate', hint: 'optional' })}
@@ -206,9 +210,9 @@ export default function EventDetail({ event, onBack, onChanged }: { event: Event
       ) : null}
       {event.description ? <Row label="Details" value={event.description} /> : null}
       <Text style={{ color: t.sub, fontSize: 12, marginTop: 24 }}>
-        {isEmail ? 'Found in a Shiloh email.' : 'From the Shiloh website calendar.'}
+        {event.source === 'manual' ? 'Added in the app.' : event.source === 'email' ? 'Found in a Shiloh email.' : 'From the Shiloh website calendar.'}
       </Text>
-      {isEmail ? (
+      {editable ? (
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 8, alignItems: 'center' }}>
           <Btn label="Edit" onPress={startEdit} color={t.accent} />
           <Btn label="Delete" onPress={remove} color="#ff3b30" />
