@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-03T07:21:37.468827-06:00",
+ "generated": "2026-11-03T10:01:16.582319-06:00",
  "events": [
   {
    "id": "641_2026-11-02T18:30:00Z_2026-11-02T19:30:00Z",
@@ -55,6 +55,17 @@
    "location": null,
    "description": null,
    "source": "web"
+  },
+  {
+   "id": "email_9144e1d67d81",
+   "title": "5th grade meeting",
+   "start": "2026-11-05",
+   "end": "2026-11-05",
+   "allDay": true,
+   "category": "Email",
+   "location": "Main office",
+   "description": "5th grade meeting in the main office. No start time was given in the email.",
+   "source": "email"
   },
   {
    "id": "599_2026-11-05T18:32:00Z_2026-11-05T19:07:00Z",
