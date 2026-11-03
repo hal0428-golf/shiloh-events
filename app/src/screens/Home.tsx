@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
 import { EventItem, dayKey, eventsByDay, isFifth, isHoliday, loadEvents, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
@@ -11,6 +11,7 @@ import MonthGrid from './MonthGrid';
 const ELEM = '__elementary';
 const NO_CHIP = ['All School Calendar', 'Middle School', 'Secondary School', 'Elementary School'];
 const MAX_AHEAD = 9; // months ahead the feed covers
+const AUTO_REFRESH_MS = 30 * 60 * 1000; // while the app stays open
 
 function Arrow({ dir, enabled, onPress }: { dir: 'prev' | 'next'; enabled: boolean; onPress: () => void }) {
   const t = useTheme();
@@ -46,6 +47,12 @@ export default function Home({ onOpen, onSetup }: { onOpen: (e: EventItem) => vo
     setChecked(new Date());
   }, []);
   useEffect(() => { load(); }, [load]);
+  // iOS keeps the app alive in the background, so reload on return and every so often while open.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (st) => { if (st === 'active') load(); });
+    const timer = setInterval(() => { if (AppState.currentState === 'active') load(); }, AUTO_REFRESH_MS);
+    return () => { sub.remove(); clearInterval(timer); };
+  }, [load]);
   const refresh = async () => {
     setRefreshing(true);
     await Promise.all([load(), new Promise((r) => setTimeout(r, 700))]);
