@@ -15,9 +15,47 @@ export type EventItem = {
   source: 'web' | 'email' | 'manual';
 };
 
-const FIFTH_RE = /\b(5th|fifth)\b/i;
-const LOWER_GRADE_RE = /\b(kindergarten|pre-?k|(1st|2nd|3rd|4th) grade)\b/i;
-export const isFifth = (e: EventItem) => FIFTH_RE.test(e.title);
+// ---- Grades (chosen in Settings; 5th grade until changed) ----
+/** -1 is Pre-K, 0 is Kindergarten, 1-12 are grades. */
+export type Grade = number;
+export const GRADES: Grade[] = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const ORD = ['', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
+const WORD: Record<number, string> = { 5: 'fifth', 6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth', 11: 'eleventh', 12: 'twelfth' };
+// Class names only mark an event as yours; "Senior Night" etc. shouldn't hide it from other grades.
+const CLASS: Record<number, string> = { 9: 'freshm[ae]n', 10: 'sophomores?', 11: 'juniors?', 12: 'seniors?' };
+// 1st-4th need "grade" after them so "1st Round Playoffs" isn't a grade.
+const GRADE_RE: Record<number, RegExp> = Object.fromEntries(GRADES.map((g) => [g,
+  g === -1 ? /\bpre-?k\b/i
+  : g === 0 ? /\bkindergarten\b/i
+  : g <= 4 ? new RegExp(`\\b${ORD[g]} grade\\b`, 'i')
+  : new RegExp(`\\b(${ORD[g]}|${WORD[g]})\\b`, 'i')]));
+const CLASS_RE: Record<number, RegExp> = Object.fromEntries(Object.entries(CLASS).map(([g, w]) => [g, new RegExp(`\\b${w}\\b`, 'i')]));
+
+export const gradeName = (g: Grade) => (g === -1 ? 'Pre-K' : g === 0 ? 'Kindergarten' : `${ORD[g]} grade`);
+export const gradeShort = (g: Grade) => (g === -1 ? 'Pre-K' : g === 0 ? 'K' : ORD[g]);
+
+const GRADES_KEY = 'my-grades-v1';
+let myGrades: Grade[] = [5];
+export const getMyGrades = () => myGrades;
+export async function loadMyGrades(): Promise<Grade[]> {
+  try {
+    const s = await AsyncStorage.getItem(GRADES_KEY);
+    const g = s ? (JSON.parse(s) as Grade[]).filter((x) => GRADES.includes(x)) : [];
+    if (g.length) myGrades = g;
+  } catch {}
+  return myGrades;
+}
+export async function saveMyGrades(g: Grade[]): Promise<void> {
+  myGrades = GRADES.filter((x) => g.includes(x));
+  try { await AsyncStorage.setItem(GRADES_KEY, JSON.stringify(myGrades)); } catch {}
+}
+
+const mentions = (e: EventItem, g: Grade) => GRADE_RE[g].test(e.title) || !!CLASS_RE[g]?.test(e.title);
+/** For one of the grades chosen in Settings. */
+export const isMyGrade = (e: EventItem) => myGrades.some((g) => mentions(e, g));
+/** e.g. "5th grade", for the event's line under the time. */
+export const myGradeLabel = (e: EventItem) => myGrades.filter((g) => mentions(e, g)).map(gradeName).join(', ');
+const forSomeGrade = (e: EventItem) => GRADES.some((g) => GRADE_RE[g].test(e.title));
 
 // ---- What to show (edit these to change the rules) ----
 const HIDDEN_CATEGORIES = ['Middle School', 'Secondary School', 'Elementary School'];
@@ -29,22 +67,22 @@ export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
 /** From a forwarded email or added in the app; these are orange and can be edited. */
 export const isEmail = (e: EventItem) => e.source !== 'web';
 export type Kind = 'email' | 'holiday' | 'elem' | 'other';
-/** Email/added events are orange even when they are also 5th grade or a holiday. */
-export const kindOf = (e: EventItem): Kind => (isEmail(e) ? 'email' : isHoliday(e) ? 'holiday' : isFifth(e) ? 'elem' : 'other');
+/** Email/added events are orange even when they are also for your grade or a holiday. */
+export const kindOf = (e: EventItem): Kind => (isEmail(e) ? 'email' : isHoliday(e) ? 'holiday' : isMyGrade(e) ? 'elem' : 'other');
 
-/** For 5th grade, only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
+/** Only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
 function sportAllowed(title: string): boolean {
   return /\byouth\b/i.test(title);
 }
 export function visibleEvent(e: EventItem): boolean {
-  if (e.source === 'manual' || isFifth(e) || isHoliday(e)) return true;
+  if (e.source === 'manual' || isMyGrade(e) || isHoliday(e)) return true;
   if (e.category && HIDDEN_CATEGORIES.includes(e.category)) return false;
-  if (LOWER_GRADE_RE.test(e.title)) return false;
+  if (forSomeGrade(e)) return false; // another grade's event
   if (SPORT_RE.test(e.title) && GAME_RE.test(e.title) && !sportAllowed(e.title)) return false;
   return true;
 }
 
-/** Every event on every day (no past filter), elementary first, then all-day, then by time. */
+/** Every event on every day (no past filter), your grade first, then all-day, then by time. */
 export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
   const map = new Map<string, EventItem[]>();
   const add = (k: string, e: EventItem) => map.set(k, [...(map.get(k) ?? []), e]);
@@ -55,7 +93,7 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
     } else add(dayKey(startDate(e)), e);
   }
   for (const list of map.values()) {
-    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isFifth(e) || isEmail(e) ? 1 : 0);
+    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isMyGrade(e) || isEmail(e) ? 1 : 0);
     list.sort((a, b) => rank(b) - rank(a) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
   }
   return map;

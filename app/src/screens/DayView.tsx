@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { EventItem, formatTime, kindOf } from '../lib';
+import { EventItem, myGradeLabel, formatTime, kindOf } from '../lib';
 import { kindStyle, useTheme } from '../theme';
 
 export default function DayView({ events, onOpen }: { events: EventItem[]; onOpen: (e: EventItem) => void }) {
@@ -16,7 +16,7 @@ export default function DayView({ events, onOpen }: { events: EventItem[]; onOpe
             onPress={() => onOpen(e)}
             style={[s.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: k.edge, borderLeftWidth: kind === 'other' ? StyleSheet.hairlineWidth : 5 }]}>
             <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>
-              {formatTime(e)}{kind === 'elem' ? '  ·  5th grade' : kind === 'holiday' ? '  ·  Holiday' : ''}{e.source === 'email' ? '  ·  from email' : ''}
+              {formatTime(e)}{kind === 'elem' ? `  ·  ${myGradeLabel(e)}` : kind === 'holiday' ? '  ·  Holiday' : ''}{e.source === 'email' ? '  ·  from email' : ''}
             </Text>
             <Text style={{ color: t.text, fontSize: 16, fontWeight: '600', marginTop: 2 }}>{e.title}</Text>
             {e.location ? <Text style={{ color: t.sub, fontSize: 13, marginTop: 2 }}>{e.location}</Text> : null}

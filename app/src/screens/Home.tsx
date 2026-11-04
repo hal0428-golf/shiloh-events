@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, dayKey, eventsByDay, isFifth, isHoliday, loadEvents, visibleEvent } from '../lib';
+import { EventItem, dayKey, eventsByDay, getMyGrades, isHoliday, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
 import DayView from './DayView';
 import EventList from './EventList';
 import MonthGrid from './MonthGrid';
 
-const ELEM = '__elementary';
-const NO_CHIP = ['All School Calendar', 'Middle School', 'Secondary School', 'Elementary School'];
+const ELEM = '__mygrade';
+const NO_CHIP = ['All School Calendar', 'Middle School', 'Secondary School', 'Elementary School', 'Athletics'];
 const MAX_AHEAD = 9; // months ahead the feed covers
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const AUTO_REFRESH_MS = 30 * 60 * 1000; // while the app stays open
 
 function Arrow({ dir, enabled, onPress }: { dir: 'prev' | 'next'; enabled: boolean; onPress: () => void }) {
@@ -26,7 +27,7 @@ function Arrow({ dir, enabled, onPress }: { dir: 'prev' | 'next'; enabled: boole
   );
 }
 
-export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem) => void; onAdd: (day: string) => void; onSetup: () => void }) {
+export default function Home({ onOpen, onAdd, onSettings }: { onOpen: (e: EventItem) => void; onAdd: (day: string) => void; onSettings: () => void }) {
   const t = useTheme();
   const now = new Date();
   const base = now.getFullYear() * 12 + now.getMonth();
@@ -34,11 +35,13 @@ export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem
   const [info, setInfo] = useState<{ updated: string | null; offline: boolean; isSeed: boolean } | null>(null);
   const [checked, setChecked] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState(ELEM);
   const [view, setView] = useState<'month' | 'day' | 'list'>('month');
   const [dayCur, setDayCur] = useState(() => new Date(now.getFullYear(), now.getMonth(), now.getDate()));
   const [cursor, setCursor] = useState(base); // year*12 + month
   const [day, setDay] = useState<string | null>(null);
+  const [grades, setGrades] = useState(getMyGrades); // the filters below read the chosen grades from lib
+  useEffect(() => { loadMyGrades().then((g) => setGrades([...g])); }, []);
 
   const load = useCallback(async () => {
     const r = await loadEvents();
@@ -79,15 +82,15 @@ export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem
     }),
   ).current;
 
-  const shown = useMemo(() => (events ?? []).filter(visibleEvent), [events]);
+  const shown = useMemo(() => (events ?? []).filter(visibleEvent), [events, grades]);
 
   const chips = useMemo(() => {
     const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => !NO_CHIP.includes(c)))).sort();
-    return [{ id: 'All', label: 'All' }, { id: ELEM, label: '5th Grade ★' }, ...cats.map((c) => ({ id: c, label: c }))];
+    return [{ id: ELEM, label: 'Grade Selected' }, { id: 'All', label: 'All Grades' }, ...cats.map((c) => ({ id: c, label: c }))];
   }, [shown]);
 
   const filtered = useMemo(
-    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isFifth(e) || isHoliday(e) : (e.category ?? 'Other') === filter)),
+    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isMyGrade(e) || isHoliday(e) : (e.category ?? 'Other') === filter)),
     [shown, filter],
   );
   const byDay = useMemo(() => eventsByDay(filtered), [filtered]);
@@ -103,9 +106,10 @@ export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem
   const canPrevDay = dayCur > minDay;
   const canNextDay = dayCur < maxDay;
   const headerDate = view === 'month' ? new Date(year, month, 1) : view === 'day' ? dayCur : now;
-  const monthName = headerDate.toLocaleDateString([], { month: 'long', year: 'numeric' });
+  const monthName = `${MONTHS[headerDate.getMonth()]} ${headerDate.getFullYear()}`; // "Nov 2026"
   const dayLabel = dayCur.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
   const onAccent = t.bg === '#0d1117' ? '#0d1117' : '#fff';
+  const chipOff = t.bg === '#0d1117' ? '#3a414b' : '#d3d7dd'; // gray until tapped, then green
   const fmt = (d: Date) => d.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   const statusText = refreshing ? 'Refreshing…'
     : info?.isSeed ? 'Sample events only (live feed not connected) · tap to refresh'
@@ -130,14 +134,14 @@ export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem
 
       <View style={s.bar}>
         <View style={[s.seg, { backgroundColor: t.chip }]}>
-          {(['month', 'day', 'list'] as const).map((v) => (
+          {(['month', 'list'] as ('month' | 'day' | 'list')[]).map((v) => ( // Day view is still here; add 'day' back to show its button
             <Pressable key={v} onPress={() => setView(v)} style={[s.segItem, view === v && { backgroundColor: t.accent }]}>
               <Text style={{ color: view === v ? onAccent : t.text, fontWeight: '600', fontSize: 13 }}>{v === 'month' ? 'Month' : v === 'day' ? 'Day' : 'List'}</Text>
             </Pressable>
           ))}
         </View>
         {view === 'month' && (
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 56 }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 20, marginRight: 8 }}>
             <Arrow dir="prev" enabled={canPrev} onPress={() => setCursor(cursor - 1)} />
             <Arrow dir="next" enabled={canNext} onPress={() => setCursor(cursor + 1)} />
           </View>
@@ -161,18 +165,24 @@ export default function Home({ onOpen, onAdd, onSetup }: { onOpen: (e: EventItem
         </Pressable>
       </View>
 
-      <View style={{ flexGrow: 0 }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
+      <View style={{ flexGrow: 0, flexDirection: 'row', alignItems: 'center' }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={s.chips}>
           {chips.map((c) => {
             const on = c.id === filter;
-            const elem = c.id === ELEM;
             return (
-              <Pressable key={c.id} onPress={() => setFilter(c.id)} style={[s.chip, { backgroundColor: elem ? (on ? '#ffd60a' : '#fff3b0') : on ? t.accent : t.chip }]}>
-                <Text style={{ color: elem ? '#000000' : on ? onAccent : t.text, fontSize: 13, fontWeight: '600' }}>{c.label}</Text>
+              <Pressable key={c.id} onPress={() => setFilter(c.id)} style={[s.chip, { backgroundColor: on ? t.hol : chipOff }]}>
+                <Text style={{ color: on ? t.holText : t.text, fontSize: 13, fontWeight: '600' }}>{c.label}</Text>
               </Pressable>
             );
           })}
         </ScrollView>
+        <Pressable
+          onPress={onSettings}
+          hitSlop={8}
+          accessibilityLabel="Settings"
+          style={({ pressed }) => [{ width: 34, height: 34, borderRadius: 17, backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center', marginRight: 12, opacity: pressed ? 0.7 : 1 }]}>
+          <Text style={{ color: onAccent, fontSize: 20, lineHeight: 24 }}>{'⚙︎'}</Text>
+        </Pressable>
       </View>
 
       {view === 'month'
@@ -196,7 +206,7 @@ const s = StyleSheet.create({
   btn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10 },
   bar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 4 },
   seg: { flexDirection: 'row', borderRadius: 9, padding: 2 },
-  segItem: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 7 },
+  segItem: { paddingHorizontal: 14, paddingVertical: 5, borderRadius: 7 },
   chips: { paddingHorizontal: 12, paddingVertical: 6, gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
 });
