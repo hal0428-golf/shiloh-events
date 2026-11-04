@@ -16,5 +16,31 @@
    "source": "email"
   }
  ],
- "<8bwdHU5hYbpOOxmWM2L8kA@notifications.google.com>": []
+ "<8bwdHU5hYbpOOxmWM2L8kA@notifications.google.com>": [],
+ "<C0C5F4B3-2850-4EC3-85EA-EBF09FE3F881@gmail.com>": [
+  {
+   "id": "email_23bcc7fd2c8e",
+   "title": "Teacher meeting",
+   "start": "2026-11-23",
+   "end": "2026-11-23",
+   "allDay": true,
+   "category": "Email",
+   "location": null,
+   "description": "5th grade teacher meeting, per email from Hal Melville with subject '5th grade'. No time or location given.",
+   "source": "email"
+  }
+ ],
+ "<4D704DD6-7814-4085-A76E-867663862A7B@gmail.com>": [
+  {
+   "id": "email_1cd6c825db0d",
+   "title": "Teacher meeting - 5th grade",
+   "start": "2026-11-17",
+   "end": "2026-11-17",
+   "allDay": true,
+   "category": "Email",
+   "location": null,
+   "description": "Teacher meeting for 5th grade. No time or location given in the email.",
+   "source": "email"
+  }
+ ]
 }

@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-04T13:14:41.680101-06:00",
+ "generated": "2026-11-04T14:24:57.281432-06:00",
  "events": [
   {
    "id": "641_2026-11-02T18:30:00Z_2026-11-02T19:30:00Z",
@@ -409,6 +409,17 @@
    "source": "web"
   },
   {
+   "id": "email_1cd6c825db0d",
+   "title": "Teacher meeting - 5th grade",
+   "start": "2026-11-17",
+   "end": "2026-11-17",
+   "allDay": true,
+   "category": "Email",
+   "location": null,
+   "description": "Teacher meeting for 5th grade. No time or location given in the email.",
+   "source": "email"
+  },
+  {
    "id": "766_2026-11-17T21:30:00Z_2026-11-17T23:00:00Z",
    "title": "Softball Camp CLONE",
    "start": "2026-11-17T15:30:00-06:00",
@@ -528,6 +539,17 @@
    "location": null,
    "description": null,
    "source": "web"
+  },
+  {
+   "id": "email_23bcc7fd2c8e",
+   "title": "Teacher meeting",
+   "start": "2026-11-23",
+   "end": "2026-11-23",
+   "allDay": true,
+   "category": "Email",
+   "location": null,
+   "description": "5th grade teacher meeting, per email from Hal Melville with subject '5th grade'. No time or location given.",
+   "source": "email"
   },
   {
    "id": "710_2026-11-23T19:00:00Z_2026-11-23T20:00:00Z",
