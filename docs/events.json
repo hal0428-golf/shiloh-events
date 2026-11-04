@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-04T07:23:25.659547-06:00",
+ "generated": "2026-11-04T10:07:42.435155-06:00",
  "events": [
   {
    "id": "641_2026-11-02T18:30:00Z_2026-11-02T19:30:00Z",
@@ -52,6 +52,17 @@
    "end": "2026-11-04T13:07:00-06:00",
    "allDay": false,
    "category": "Secondary School",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "770_2026-11-04T22:00:00Z_2026-11-04T23:00:00Z",
+   "title": "Swim Meet",
+   "start": "2026-11-04T16:00:00-06:00",
+   "end": "2026-11-04T17:00:00-06:00",
+   "allDay": false,
+   "category": "Athletics",
    "location": null,
    "description": null,
    "source": "web"
@@ -613,6 +624,17 @@
    "end": "2026-12-02",
    "allDay": true,
    "category": "Secondary School",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "769_2026-12-02T22:00:00Z_2026-12-02T23:00:00Z",
+   "title": "Swim Meet",
+   "start": "2026-12-02T16:00:00-06:00",
+   "end": "2026-12-02T17:00:00-06:00",
+   "allDay": false,
+   "category": "Athletics",
    "location": null,
    "description": null,
    "source": "web"
@@ -1427,6 +1449,17 @@
    "end": "2027-01-15T09:00:00-06:00",
    "allDay": false,
    "category": "All School Calendar",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "768_2027-01-15T22:00:00Z_2027-01-15T23:00:00Z",
+   "title": "Swim Meet",
+   "start": "2027-01-15T16:00:00-06:00",
+   "end": "2027-01-15T17:00:00-06:00",
+   "allDay": false,
+   "category": "Athletics",
    "location": null,
    "description": null,
    "source": "web"
