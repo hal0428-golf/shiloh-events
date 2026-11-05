@@ -30,5 +30,13 @@
   "allDay": true,
   "start": "2026-11-26",
   "end": "2026-11-26"
+ },
+ "parent_2edab8481876": {
+  "title": "Carrie",
+  "location": null,
+  "description": "Holiday (Veterans Day)",
+  "allDay": true,
+  "start": "2026-11-11",
+  "end": "2026-11-11"
  }
 }
