@@ -34,13 +34,14 @@ jobs:
         env:
           FEED_TOKEN: ${{ secrets.FEED_TOKEN }}       # can write only to the shiloh-feed repo
         run: |
+          if [ -z "$FEED_TOKEN" ]; then echo "::error::The FEED_TOKEN secret is empty or missing"; exit 1; fi
           mkdir /tmp/feed && cp feed/events.locked.json /tmp/feed/ && cd /tmp/feed
           git init -q -b main
           git config user.name "events-bot"
           git config user.email "events-bot@users.noreply.github.com"
           git add events.locked.json && git commit -q -m "Update feed"
           # One commit only, so old copies don't pile up.
-          git push -q -f "https://x-access-token:${FEED_TOKEN}@github.com/hal0428-golf/shiloh-feed.git" main
+          git push -q -f "https://hal0428-golf:$(printf %s "$FEED_TOKEN" | tr -d '[:space:]')@github.com/hal0428-golf/shiloh-feed.git" main
       - name: Commit changes
         run: |
           git config user.name "events-bot"
