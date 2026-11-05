@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import seed from '../assets/seed-events.json';
-import { EVENTS_URL } from './config';
-import { applyOverrides, loadOverrides } from './edits';
+import { LockedFeed, clearAccess, getAccess, isListed, unlockFeed } from './access';
+import { FEED_URL } from './config';
+import { Overrides, applyOverrides, loadOverrides } from './edits';
 import { loadFamilyEvents } from './familyCal';
 
 export type EventItem = {
@@ -105,8 +105,10 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
   return map;
 }
 
-type Feed = { generated: string; events: EventItem[] };
-const CACHE_KEY = 'events-cache-v1';
+type Feed = { generated: string; events: EventItem[]; overrides?: Overrides };
+const CACHE_KEY = 'events-cache-v2';
+/** none: no access code on this phone yet. revoked: the code was removed from the list. */
+export type Locked = 'none' | 'revoked';
 
 export function parseDay(s: string): Date {
   const [y, m, d] = s.slice(0, 10).split('-').map(Number);
@@ -163,28 +165,40 @@ export function groupByDay(events: EventItem[], now = new Date()) {
     }));
 }
 
-export async function loadEvents(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
-  const [r, ov, fam] = await Promise.all([loadFeed(), loadOverrides(), loadFamilyEvents()]);
-  return { ...r, events: [...applyOverrides(r.events, ov), ...fam] };
+export async function loadEvents(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean; locked?: Locked }> {
+  const r = await loadFeed();
+  if (r.locked) return { events: [], updated: null, offline: false, isSeed: false, locked: r.locked };
+  const [ov, fam] = await Promise.all([loadOverrides(r.overrides), loadFamilyEvents()]);
+  return { events: [...applyOverrides(r.events, ov), ...fam], updated: r.updated, offline: r.offline, isSeed: false };
 }
 
-async function loadFeed(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
+async function loadFeed(): Promise<{ events: EventItem[]; overrides?: Overrides; updated: string | null; offline: boolean; locked?: Locked }> {
+  const a = await getAccess();
+  if (!a) return { events: [], updated: null, offline: false, locked: 'none' };
+  let locked: LockedFeed;
   try {
-    if (EVENTS_URL.includes('YOUR-')) throw new Error('events URL not configured');
-    const r = await fetch(`${EVENTS_URL}?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } });
+    const r = await fetch(`${FEED_URL}?t=${Date.now()}`, { headers: { 'Cache-Control': 'no-cache' } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const feed = (await r.json()) as Feed;
-    try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(feed)); } catch {}
-    return { events: feed.events, updated: feed.generated, offline: false, isSeed: false };
+    locked = (await r.json()) as LockedFeed;
   } catch {
+    // Offline: show the last calendar this phone unlocked.
     try {
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
         const feed = JSON.parse(cached) as Feed;
-        return { events: feed.events, updated: feed.generated, offline: true, isSeed: false };
+        return { events: feed.events, overrides: feed.overrides, updated: feed.generated, offline: true };
       }
     } catch {}
-    const feed = seed as Feed;
-    return { events: feed.events, updated: feed.generated, offline: true, isSeed: true };
+    return { events: [], updated: null, offline: true };
   }
+  if (!isListed(locked, a)) {
+    // This code was removed: forget it and the saved calendar.
+    try { await AsyncStorage.removeItem(CACHE_KEY); } catch {}
+    await clearAccess().catch(() => {});
+    return { events: [], updated: null, offline: false, locked: 'revoked' };
+  }
+  const feed = unlockFeed<Feed>(locked, a);
+  if (!feed) throw new Error('Could not read the calendar');
+  try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(feed)); } catch {}
+  return { events: feed.events, overrides: feed.overrides, updated: feed.generated, offline: false };
 }

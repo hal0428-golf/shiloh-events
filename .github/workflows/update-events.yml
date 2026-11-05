@@ -3,8 +3,14 @@ on:
   schedule:
     - cron: "17 */3 * * *"   # every 3 hours
   workflow_dispatch:
+  push:                       # an edit saved in the app shows up for everyone within a couple of minutes
+    branches: [main]
+    paths: [docs/overrides.json]
 permissions:
   contents: write
+concurrency:
+  group: update-events
+  cancel-in-progress: false
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -14,19 +20,31 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r backend/requirements.txt
-      - name: Build events.json
+      - name: Build events
         working-directory: backend
         env:
           IMAP_HOST: ${{ secrets.IMAP_HOST }}
           IMAP_USER: ${{ secrets.IMAP_USER }}
           IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ACCESS_CODES: ${{ secrets.ACCESS_CODES }}   # one code per line; the feed is locked when set
         run: python build_events.py
+      - name: Publish locked feed
+        if: ${{ hashFiles('feed/events.locked.json') != '' }}
+        env:
+          FEED_TOKEN: ${{ secrets.FEED_TOKEN }}       # can write only to the shiloh-feed repo
+        run: |
+          mkdir /tmp/feed && cp feed/events.locked.json /tmp/feed/ && cd /tmp/feed
+          git init -q -b main
+          git config user.name "events-bot"
+          git config user.email "events-bot@users.noreply.github.com"
+          git add events.locked.json && git commit -q -m "Update feed"
+          # One commit only, so old copies don't pile up.
+          git push -q -f "https://x-access-token:${FEED_TOKEN}@github.com/hal0428-golf/shiloh-feed.git" main
       - name: Commit changes
         run: |
           git config user.name "events-bot"
           git config user.email "events-bot@users.noreply.github.com"
-          git add docs/events.json
-          if [ -f backend/data/email_cache.json ]; then git add backend/data/email_cache.json; fi
+          git add -A -- docs backend/data
           # The app may save docs/overrides.json while this runs, so rebase onto it before pushing.
           git diff --cached --quiet || (git commit -m "Update events" && git pull --rebase && git push)

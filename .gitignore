@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 .expo/
 _to_delete/
+feed/

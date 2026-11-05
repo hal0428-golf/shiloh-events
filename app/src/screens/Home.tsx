@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, dayKey, eventsByDay, getMyGrades, isEmail, isFamily, isHoliday, isParent, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
+import { EventItem, dayKey, eventsByDay, getMyGrades, isEmail, isFamily, isHoliday, isParent, Locked, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
 import DayView from './DayView';
@@ -27,7 +27,7 @@ function Arrow({ dir, enabled, onPress }: { dir: 'prev' | 'next'; enabled: boole
   );
 }
 
-export default function Home({ onOpen, onAdd, onSettings }: { onOpen: (e: EventItem) => void; onAdd: (day: string) => void; onSettings: () => void }) {
+export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: (e: EventItem) => void; onAdd: (day: string) => void; onSettings: () => void; onLocked: (why: Locked) => void }) {
   const t = useTheme();
   const now = new Date();
   const base = now.getFullYear() * 12 + now.getMonth();
@@ -45,6 +45,7 @@ export default function Home({ onOpen, onAdd, onSettings }: { onOpen: (e: EventI
 
   const load = useCallback(async () => {
     const r = await loadEvents();
+    if (r.locked) { onLocked(r.locked); return; }
     setEvents(r.events);
     setInfo({ updated: r.updated, offline: r.offline, isSeed: r.isSeed });
     setChecked(new Date());

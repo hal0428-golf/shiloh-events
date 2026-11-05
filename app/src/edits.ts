@@ -74,10 +74,13 @@ async function fetchRemote(token: string | null): Promise<{ ov: Overrides; sha?:
 }
 
 /** Shared overrides plus this phone's very recent saves. Falls back to the last copy seen when offline. */
-export async function loadOverrides(): Promise<Overrides> {
+/** With the editing key: the live shared file. Without it (the repo is private): the copy inside the locked feed. */
+export async function loadOverrides(fromFeed: Overrides = {}): Promise<Overrides> {
   let ov: Overrides;
-  try {
-    ov = (await fetchRemote(await getEditKey())).ov;
+  const token = await getEditKey();
+  if (!token) ov = { ...fromFeed };
+  else try {
+    ov = (await fetchRemote(token)).ov;
     try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(ov)); } catch {}
   } catch {
     ov = (await readJson<Overrides>(CACHE_KEY)) ?? {};

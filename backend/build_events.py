@@ -1,16 +1,22 @@
 """Build docs/events.json from the website calendar plus forwarded emails."""
 import json
+import os
 import re
 import sys
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from access import lock, parse_codes
 from read_email import fetch_email_events
 from scrape_calendar import fetch_events
 
 TZ = ZoneInfo("America/Chicago")
-OUT = Path(__file__).parent.parent / "docs" / "events.json"
+ROOT = Path(__file__).parent.parent
+OUT = ROOT / "docs" / "events.json"
+OVERRIDES = ROOT / "docs" / "overrides.json"
+# Locked feed for the app; the workflow copies it to the public feed repo.
+LOCKED_OUT = Path(os.environ.get("LOCKED_OUT", ROOT / "feed" / "events.locked.json"))
 
 
 def _day(ev):
@@ -49,9 +55,19 @@ def main():
         sys.exit("No events scraped from the website; keeping previous events.json")
     mail = fetch_email_events()
     events = merge(web, mail, now)
-    OUT.parent.mkdir(exist_ok=True)
-    OUT.write_text(json.dumps({"generated": now.isoformat(), "events": events}, indent=1))
-    print(f"wrote {len(events)} events ({len(web)} web, {len(mail)} email)")
+    feed = {"generated": now.isoformat(), "events": events}
+    codes = parse_codes(os.environ.get("ACCESS_CODES"))
+    if codes:
+        # Edits made in the app ride inside the locked feed, since the repo itself is private.
+        overrides = json.loads(OVERRIDES.read_text(encoding="utf-8")) if OVERRIDES.exists() else {}
+        LOCKED_OUT.parent.mkdir(parents=True, exist_ok=True)
+        LOCKED_OUT.write_text(json.dumps(lock({**feed, "overrides": overrides}, codes)))
+        OUT.unlink(missing_ok=True)  # no readable copy anywhere once codes are in use
+        print(f"wrote {len(events)} events ({len(web)} web, {len(mail)} email), locked for {len(codes)} codes")
+    else:
+        OUT.parent.mkdir(exist_ok=True)
+        OUT.write_text(json.dumps(feed, indent=1))
+        print(f"wrote {len(events)} events ({len(web)} web, {len(mail)} email), not locked (no ACCESS_CODES)")
 
 
 if __name__ == "__main__":

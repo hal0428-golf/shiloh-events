@@ -4,7 +4,7 @@ import { GRADES, Grade, getMyGrades, gradeName, gradeShort, saveMyGrades } from 
 import { FamilyCal, getFamilyCal, listPhoneCalendars, setFamilyCal } from '../familyCal';
 import { useTheme } from '../theme';
 
-export default function Settings({ onBack, onSetup }: { onBack: () => void; onSetup: () => void }) {
+export default function Settings({ onBack, onSetup, onChangeCode }: { onBack: () => void; onSetup: () => void; onChangeCode: () => void }) {
   const t = useTheme();
   const [grades, setGrades] = useState<Grade[]>(getMyGrades);
   const toggle = (g: Grade) => {
@@ -75,6 +75,13 @@ export default function Settings({ onBack, onSetup }: { onBack: () => void; onSe
           </Pressable>
         </View>
       ) : null}
+
+      <Text style={[st.h2, { color: t.text }]}>Access code</Text>
+      <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>This phone is unlocked. Only people with a code can see the calendar.</Text>
+      <Pressable onPress={onChangeCode} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>
+        <Text style={{ color: t.text, fontSize: 16, flex: 1 }}>Use a different code</Text>
+        <Text style={{ color: t.sub, fontSize: 18 }}>›</Text>
+      </Pressable>
 
       <Text style={[st.h2, { color: t.text }]}>Email events</Text>
       <Pressable onPress={onSetup} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>

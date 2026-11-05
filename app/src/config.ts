@@ -1,4 +1,5 @@
-export const EVENTS_URL = 'https://hal0428-golf.github.io/shiloh-events/events.json';
+// Locked feed (needs an access code to read), published by the Update events workflow.
+export const FEED_URL = 'https://raw.githubusercontent.com/hal0428-golf/shiloh-feed/main/events.locked.json';
 export const FORWARD_ADDRESS = 'shilohevents38@gmail.com';
 export const SCHOOL_NAME = 'Shiloh Christian School';
 // Shared edits to email events live in this repo file; writing needs an editing key (GitHub token) entered on the phone.
