@@ -30,6 +30,9 @@ def merge(web, mail, now):
     seen = {(_day(e), _norm(e["title"])) for e in web}
     merged = list(web)
     for e in mail:
+        if e.get("category") == "Parent":  # a parent's name never duplicates a school event
+            merged.append(e)
+            continue
         n = _norm(e["title"])
         dup = any(d == _day(e) and (n in t or t in n) for d, t in seen)
         if not dup:
