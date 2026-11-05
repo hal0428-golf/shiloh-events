@@ -3,6 +3,7 @@
 Optional: runs only when IMAP_HOST, IMAP_USER, IMAP_PASSWORD and ANTHROPIC_API_KEY are set.
 Extracted results are cached per Message-ID so each email is sent to Claude once.
 """
+import base64
 import email
 import hashlib
 import imaplib
@@ -20,6 +21,7 @@ from bs4 import BeautifulSoup
 TZ = ZoneInfo("America/Chicago")
 CACHE = Path(__file__).parent / "data" / "email_cache.json"
 MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-5-5")
+PARENT_MODEL = os.environ.get("CLAUDE_PARENT_MODEL", "claude-sonnet-5-5")
 LOOKBACK_DAYS = 60
 
 PROMPT = """You extract school events from one email forwarded from Shiloh Christian School (Springdale, Arkansas).
@@ -46,6 +48,10 @@ Return ONLY a JSON array (no prose), one item per day, with date ranges expanded
 {{"date": "YYYY-MM-DD", "parent": str, "note": str or null}}
 "parent" is the parent's first name exactly as written in the email (for example "Jeff" or "Carrie").
 "note" is a short detail for that day such as a handoff time or place (max 100 chars), else null.
+If calendar screenshots are attached, read them: each day cell shows the parent's name, and the
+legend shows each parent's color. For a day whose name is hidden by an icon (holiday, today, "Start"),
+use the cell's background color and the legend to decide the parent; skip the day only if you truly cannot tell.
+Use the month and year shown in the screenshot.
 Return [] if there is no schedule.
 
 EMAIL SUBJECT: {subject}
@@ -74,6 +80,25 @@ def _text(msg):
     if html:
         return BeautifulSoup(html, "html.parser").get_text("\n")
     return ""
+
+
+IMAGE_TYPES = {"image/png", "image/jpeg", "image/gif", "image/webp"}
+
+
+def _images(msg, limit=4, max_bytes=4_500_000):
+    """Pictures in the email (attached or inline), as Claude image blocks."""
+    out = []
+    for part in msg.walk():
+        ct = part.get_content_type()
+        if ct not in IMAGE_TYPES:
+            continue
+        data = part.get_payload(decode=True)
+        if not data or len(data) > max_bytes:
+            continue
+        out.append({"type": "image", "source": {"type": "base64", "media_type": ct, "data": base64.b64encode(data).decode()}})
+        if len(out) >= limit:
+            break
+    return out
 
 
 def _hdr(v):
@@ -151,11 +176,12 @@ def latest_parent_days(events):
     return rest + list(best.values())
 
 
-def _extract(client, subject, body, received, prompt=PROMPT):
+def _extract(client, subject, body, received, prompt=PROMPT, images=(), model=MODEL):
+    text = {"type": "text", "text": prompt.format(received=received, subject=subject, body=body[:12000])}
     resp = client.messages.create(
-        model=MODEL,
+        model=model,
         max_tokens=4000,
-        messages=[{"role": "user", "content": prompt.format(received=received, subject=subject, body=body[:12000])}],
+        messages=[{"role": "user", "content": [*images, text]}],
     )
     txt = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
     i, j = txt.find("["), txt.rfind("]")
@@ -202,7 +228,10 @@ def _read_inbox(client, cache, host, user, pw):
         subject = _hdr(msg["Subject"])
         is_parent = bool(PARENT_SUBJECT.search(subject))
         try:
-            items = _extract(client, subject, _text(msg), received, PARENT_PROMPT if is_parent else PROMPT)
+            if is_parent:  # screenshots need a stronger model to read colors and names reliably
+                items = _extract(client, subject, _text(msg), received, PARENT_PROMPT, _images(msg), PARENT_MODEL)
+            else:
+                items = _extract(client, subject, _text(msg), received)
         except Exception as e:  # leave uncached so it retries next run
             print("email: extraction failed:", e)
             continue

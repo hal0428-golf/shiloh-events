@@ -40,3 +40,13 @@ def test_parent_schedule_newest_email_wins():
 def test_parent_subject_match():
     assert read_email.PARENT_SUBJECT.search("Fwd: Parent Schedule for November")
     assert not read_email.PARENT_SUBJECT.search("Parent-teacher conference")
+
+
+def test_images_found_in_email():
+    from email.message import EmailMessage
+    m = EmailMessage()
+    m["Subject"] = "Parent Schedule"
+    m.set_content("see picture")
+    m.add_attachment(b"\x89PNG fake", maintype="image", subtype="png", filename="cal.png")
+    imgs = read_email._images(m)
+    assert len(imgs) == 1 and imgs[0]["source"]["media_type"] == "image/png"
