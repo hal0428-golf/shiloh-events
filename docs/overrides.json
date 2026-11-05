@@ -22,5 +22,13 @@
   "start": "2026-11-07",
   "end": "2026-11-07",
   "added": true
+ },
+ "parent_90590b452974": {
+  "title": "Jeff",
+  "location": null,
+  "description": "Thanksgiving",
+  "allDay": true,
+  "start": "2026-11-26",
+  "end": "2026-11-26"
  }
 }
