@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-05T04:18:40.203864-06:00",
+ "generated": "2026-11-05T07:29:02.525379-06:00",
  "events": [
   {
    "id": "641_2026-11-02T18:30:00Z_2026-11-02T19:30:00Z",
@@ -185,6 +185,17 @@
    "allDay": true,
    "category": "Athletics",
    "location": "Siloam Springs - India Lewis Tournament",
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "774_2026-11-09T00:00:00Z_2026-11-12T00:00:00Z",
+   "title": "State Band Competition",
+   "start": "2026-11-09",
+   "end": "2026-11-11",
+   "allDay": true,
+   "category": "Secondary School",
+   "location": null,
    "description": null,
    "source": "web"
   },
@@ -421,7 +432,7 @@
   },
   {
    "id": "766_2026-11-17T21:30:00Z_2026-11-17T23:00:00Z",
-   "title": "Softball Camp CLONE",
+   "title": "Softball Camp",
    "start": "2026-11-17T15:30:00-06:00",
    "end": "2026-11-17T17:00:00-06:00",
    "allDay": false,
@@ -921,6 +932,17 @@
    "end": "2026-12-11T09:00:00-06:00",
    "allDay": false,
    "category": "All School Calendar",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "771_2026-12-11T22:30:00Z_2026-12-11T23:30:00Z",
+   "title": "Swim Meet",
+   "start": "2026-12-11T16:30:00-06:00",
+   "end": "2026-12-11T17:30:00-06:00",
+   "allDay": false,
+   "category": "Athletics",
    "location": null,
    "description": null,
    "source": "web"
@@ -1762,6 +1784,17 @@
    "source": "web"
   },
   {
+   "id": "772_2027-01-28T22:30:00Z_2027-01-28T23:30:00Z",
+   "title": "Swim Meet",
+   "start": "2027-01-28T16:30:00-06:00",
+   "end": "2027-01-28T17:30:00-06:00",
+   "allDay": false,
+   "category": "Athletics",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
    "id": "690_2027-01-29T00:00:00Z_2027-01-29T03:00:00Z",
    "title": "Wrestling @ Gravette vs. Gravette and Siloam - Boys and Girls",
    "start": "2027-01-28T18:00:00-06:00",
@@ -2131,6 +2164,17 @@
    "end": "2027-02-27T09:00:00-06:00",
    "allDay": false,
    "category": "Secondary School",
+   "location": null,
+   "description": null,
+   "source": "web"
+  },
+  {
+   "id": "773_2027-02-27T18:00:00Z_2027-02-27T19:00:00Z",
+   "title": "Swim State Championship",
+   "start": "2027-02-27T12:00:00-06:00",
+   "end": "2027-02-27T13:00:00-06:00",
+   "allDay": false,
+   "category": "Athletics",
    "location": null,
    "description": null,
    "source": "web"
