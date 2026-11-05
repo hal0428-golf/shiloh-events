@@ -80,7 +80,7 @@ export default function EventDetail({ event, isNew = false, onBack, onChanged }:
   const [form, setForm] = useState<Form>(() => toForm(event));
   const [key, setKey] = useState('');
   const [busy, setBusy] = useState(false);
-  const editable = event.source !== 'web';
+  const editable = event.source === 'email' || event.source === 'manual';
 
   const s0 = startDate(event);
   const e0 = endDate(event);
@@ -210,7 +210,7 @@ export default function EventDetail({ event, isNew = false, onBack, onChanged }:
       ) : null}
       {event.description ? <Row label="Details" value={event.description} /> : null}
       <Text style={{ color: t.sub, fontSize: 12, marginTop: 24 }}>
-        {event.source === 'manual' ? 'Added in the app.' : event.source === 'email' ? 'Found in a Shiloh email.' : 'From the Shiloh website calendar.'}
+        {event.source === 'manual' ? 'Added in the app.' : event.category === 'Parent' ? 'From a Parent Schedule email.' : event.source === 'email' ? 'Found in a Shiloh email.' : event.source === 'calendar' ? `From your ${event.category ?? 'phone'} calendar. Change it in that app.` : 'From the Shiloh website calendar.'}
       </Text>
       {editable ? (
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 8, alignItems: 'center' }}>

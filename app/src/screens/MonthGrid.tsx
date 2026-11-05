@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { EventItem, dayKey, isEmail, isMyGrade, isHoliday, kindOf } from '../lib';
+import { EventItem, dayKey, isHoliday, kindOf } from '../lib';
 import { kindStyle, useTheme } from '../theme';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -32,37 +32,32 @@ export default function MonthGrid({
               if (n < 1 || n > days) return <View key={c} style={{ flex: 1, backgroundColor: '#1c1f24' }} />;
               const key = dayKey(new Date(year, month, n));
               const list = byDay.get(key) ?? [];
-              const hasElem = list.some(isMyGrade);
+              // Only holidays shade the whole day; grade, added and parent events color just their own bar.
               const hasHol = list.some(isHoliday);
-              const hasEmail = list.some(isEmail);
               const shown = list.length > maxBars ? Math.max(maxBars - 1, 0) : list.length;
               const extra = list.length - shown;
               const isToday = key === todayKey;
-              const orangeCell = !isToday && hasEmail;
-              const yellowCell = !isToday && !hasHol && !hasEmail && hasElem;
               return (
                 <Pressable
                   key={c}
                   onPress={() => onDay(key)}
                   style={{
                     flex: 1, padding: 1.5, borderWidth: StyleSheet.hairlineWidth, borderColor: t.line,
-                    backgroundColor: isToday ? '#8e949c' : hasEmail ? t.emailTint : hasHol ? t.holTint : hasElem ? t.elemTint : c === 0 || c === 6 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
+                    backgroundColor: isToday ? '#ffffff' : hasHol ? t.holTint : c === 0 || c === 6 ? t.cellWeekend : t.cellWeekday, overflow: 'hidden',
                   }}>
                   <View style={st.num}>
-                    <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : yellowCell || orangeCell ? '#000000' : '#9aa4b2' }}>{n}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: isToday ? '800' : '700', color: isToday ? '#1a1400' : '#9aa4b2' }}>{n}</Text>
                   </View>
                   {list.slice(0, shown).map((e, i) => {
                     const kind = kindOf(e);
-                    const k = orangeCell && kind === 'email' ? { bg: '#2a1400', fg: '#ff9500', edge: '#2a1400', bold: true }
-                      : (yellowCell || orangeCell) && kind === 'elem' ? { bg: '#1a1400', fg: '#ffd60a', edge: '#1a1400', bold: true }
-                      : kindStyle(t, kind);
+                    const k = kindStyle(t, kind);
                     return (
                       <View key={e.id + i} style={[st.bar, { backgroundColor: k.bg }]}>
                         <Text numberOfLines={1} style={{ fontSize: 8.5, fontWeight: k.bold ? '700' : '500', color: k.fg }}>{e.title}</Text>
                       </View>
                     );
                   })}
-                  {extra > 0 && <Text style={{ fontSize: 9, color: t.cellText, fontWeight: '700', paddingLeft: 2 }}>+{extra}</Text>}
+                  {extra > 0 && <Text style={{ fontSize: 9, color: isToday ? '#1a1400' : t.cellText, fontWeight: '700', paddingLeft: 2 }}>+{extra}</Text>}
                 </Pressable>
               );
             })}

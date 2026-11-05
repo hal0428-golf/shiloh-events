@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, dayKey, eventsByDay, getMyGrades, isHoliday, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
+import { EventItem, dayKey, eventsByDay, getMyGrades, isEmail, isFamily, isHoliday, isParent, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
 import DayView from './DayView';
@@ -86,11 +86,11 @@ export default function Home({ onOpen, onAdd, onSettings }: { onOpen: (e: EventI
 
   const chips = useMemo(() => {
     const cats = Array.from(new Set(shown.map((e) => e.category ?? 'Other').filter((c) => !NO_CHIP.includes(c)))).sort();
-    return [{ id: ELEM, label: 'Grade Selected' }, { id: 'All', label: 'All Grades' }, ...cats.map((c) => ({ id: c, label: c }))];
+    return [{ id: ELEM, label: 'My Grade' }, { id: 'All', label: 'All Grades' }, ...cats.map((c) => ({ id: c, label: c }))];
   }, [shown]);
 
   const filtered = useMemo(
-    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isMyGrade(e) || isHoliday(e) : (e.category ?? 'Other') === filter)),
+    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isMyGrade(e) || isHoliday(e) || isEmail(e) || isFamily(e) || isParent(e) : (e.category ?? 'Other') === filter)),
     [shown, filter],
   );
   const byDay = useMemo(() => eventsByDay(filtered), [filtered]);

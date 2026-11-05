@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import seed from '../assets/seed-events.json';
 import { EVENTS_URL } from './config';
 import { applyOverrides, loadOverrides } from './edits';
+import { loadFamilyEvents } from './familyCal';
 
 export type EventItem = {
   id: string;
@@ -12,7 +13,7 @@ export type EventItem = {
   category: string | null;
   location: string | null;
   description: string | null;
-  source: 'web' | 'email' | 'manual';
+  source: 'web' | 'email' | 'manual' | 'calendar'; // calendar: read from a calendar on this phone (e.g. Duet)
 };
 
 // ---- Grades (chosen in Settings; 5th grade until changed) ----
@@ -65,17 +66,22 @@ const HOLIDAY_RE = /(no school|\bbreak\b|\bholiday\b|\bmlk day\b|labor day|memor
 
 export const isHoliday = (e: EventItem) => HOLIDAY_RE.test(e.title);
 /** From a forwarded email or added in the app; these are orange and can be edited. */
-export const isEmail = (e: EventItem) => e.source !== 'web';
-export type Kind = 'email' | 'holiday' | 'elem' | 'other';
+/** From a "Parent Schedule" email: an all-day event titled with the parent's name (Jeff or Carrie). */
+export const isParent = (e: EventItem) => e.category === 'Parent';
+export const isEmail = (e: EventItem) => (e.source === 'email' && !isParent(e)) || e.source === 'manual';
+/** From the co-parent calendar on this phone (Settings); purple. */
+export const isFamily = (e: EventItem) => e.source === 'calendar';
+export type Kind = 'jeff' | 'carrie' | 'parent' | 'email' | 'family' | 'holiday' | 'elem' | 'other';
 /** Email/added events are orange even when they are also for your grade or a holiday. */
-export const kindOf = (e: EventItem): Kind => (isEmail(e) ? 'email' : isHoliday(e) ? 'holiday' : isMyGrade(e) ? 'elem' : 'other');
+const parentKind = (e: EventItem): Kind => (/^jeff\b/i.test(e.title) ? 'jeff' : /^carrie\b/i.test(e.title) ? 'carrie' : 'parent');
+export const kindOf = (e: EventItem): Kind => (isParent(e) ? parentKind(e) : isEmail(e) ? 'email' : isFamily(e) ? 'family' : isHoliday(e) ? 'holiday' : isMyGrade(e) ? 'elem' : 'other');
 
 /** Only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
 function sportAllowed(title: string): boolean {
   return /\byouth\b/i.test(title);
 }
 export function visibleEvent(e: EventItem): boolean {
-  if (e.source === 'manual' || isMyGrade(e) || isHoliday(e)) return true;
+  if (e.source === 'manual' || isParent(e) || isFamily(e) || isMyGrade(e) || isHoliday(e)) return true;
   if (e.category && HIDDEN_CATEGORIES.includes(e.category)) return false;
   if (forSomeGrade(e)) return false; // another grade's event
   if (SPORT_RE.test(e.title) && GAME_RE.test(e.title) && !sportAllowed(e.title)) return false;
@@ -93,7 +99,7 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
     } else add(dayKey(startDate(e)), e);
   }
   for (const list of map.values()) {
-    const rank = (e: EventItem) => (isHoliday(e) ? 2 : isMyGrade(e) || isEmail(e) ? 1 : 0);
+    const rank = (e: EventItem) => (isParent(e) ? 3 : isHoliday(e) ? 2 : isMyGrade(e) || isEmail(e) || isFamily(e) ? 1 : 0);
     list.sort((a, b) => rank(b) - rank(a) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
   }
   return map;
@@ -158,8 +164,8 @@ export function groupByDay(events: EventItem[], now = new Date()) {
 }
 
 export async function loadEvents(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
-  const [r, ov] = await Promise.all([loadFeed(), loadOverrides()]);
-  return { ...r, events: applyOverrides(r.events, ov) };
+  const [r, ov, fam] = await Promise.all([loadFeed(), loadOverrides(), loadFamilyEvents()]);
+  return { ...r, events: [...applyOverrides(r.events, ov), ...fam] };
 }
 
 async function loadFeed(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean }> {
