@@ -196,7 +196,7 @@ export default function EventDetail({ event, isNew = false, onBack, onChanged }:
   return (
     <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={{ padding: 16 }}>
       <Pressable onPress={onBack}><Text style={{ color: t.accent, fontSize: 16, fontWeight: '600' }}>‹ Events</Text></Pressable>
-      <Text style={{ color: t.text, fontSize: 26, fontWeight: '800', marginTop: 12 }}>{event.title}</Text>
+      <Text style={{ color: '#1fa34a', fontSize: 26, fontWeight: '800', marginTop: 12 }}>{event.title}</Text>
       <Row label="Date" value={date} />
       <Row label="Time" value={formatTime(event)} />
       {event.category ? <Row label="Calendar" value={event.category} /> : null}

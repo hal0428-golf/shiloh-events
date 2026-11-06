@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { getEditKey, setEditKey } from '../edits';
-import { PARENT_COLORS, ParentPlan, dayKeyOf, getPlan, loadPlan, savePlan, textOn } from '../parents';
+import { loadEvents } from '../lib';
+import { PARENT_COLORS, ParentPlan, dayKeyOf, getPlan, loadPlan, parentIndex, savePlan, textOn } from '../parents';
 import { useTheme } from '../theme';
 
 const TODAY = '#0a2f7a'; // today's square: dark blue
@@ -22,7 +23,20 @@ export default function ParentSchedule({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     getEditKey().then((k) => setHasKey(!!k));
     loadPlan().then((p) => { if (!dirty) setPlan(p); });
+    // Parent days from "Parent Schedule" emails, shown where the schedule itself has no entry.
+    loadEvents().then(({ events }) => {
+      const m: Record<string, 0 | 1> = {};
+      for (const e of events) {
+        if (e.category !== 'Parent' || e.source === 'plan') continue;
+        const i = parentIndex(e.title);
+        if (i !== -1) m[e.start.slice(0, 10)] = i;
+      }
+      setFromEmail(m);
+    }).catch(() => {});
   }, []);
+  const [fromEmail, setFromEmail] = useState<Record<string, 0 | 1>>({});
+  /** Who has the day: set here first, else from an email. */
+  const whoOn = (k: string): 0 | 1 | undefined => plan.days[k] ?? fromEmail[k];
 
   const change = (p: ParentPlan) => { setPlan(p); setDirty(true); };
   const setParent = (i: 0 | 1, part: Partial<ParentPlan['parents'][0]>) => {
@@ -33,9 +47,10 @@ export default function ParentSchedule({ onBack }: { onBack: () => void }) {
   const tapDay = (k: string) => {
     if (!hasKey) return;
     const days = { ...plan.days };
-    const cur = days[k];
+    const cur = whoOn(k);
     if (cur === undefined) days[k] = 0;
     else if (cur === 0) days[k] = 1;
+    else if (fromEmail[k] !== undefined) days[k] = 0; // a day from an email always has someone
     else delete days[k];
     change({ ...plan, days });
   };
@@ -47,11 +62,11 @@ export default function ParentSchedule({ onBack }: { onBack: () => void }) {
   const counts = useMemo(() => {
     const c = [0, 0];
     for (let d = 1; d <= daysIn; d++) {
-      const who = plan.days[dayKeyOf(new Date(year, month, d))];
+      const who = whoOn(dayKeyOf(new Date(year, month, d)));
       if (who !== undefined) c[who]++;
     }
     return c;
-  }, [plan, year, month, daysIn]);
+  }, [plan, fromEmail, year, month, daysIn]);
 
   const clearMonth = () => {
     const days = { ...plan.days };
@@ -96,7 +111,7 @@ export default function ParentSchedule({ onBack }: { onBack: () => void }) {
       </View>
       <Text style={{ color: t.text, fontSize: 26, fontWeight: '800', marginTop: 12 }}>Parenting schedule</Text>
       <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>
-        Who has the kids each day. These days show first on the calendar in each parent's color, and replace parent days from emails.
+        Who has the kids each day, including days from Parent Schedule emails. Changes you make here replace the email days.
       </Text>
 
       {hasKey === false ? (
@@ -125,7 +140,7 @@ export default function ParentSchedule({ onBack }: { onBack: () => void }) {
               const n = w * 7 + c - offset + 1;
               if (n < 1 || n > daysIn) return <View key={c} style={st.cell} />;
               const k = dayKeyOf(new Date(year, month, n));
-              const who = plan.days[k];
+              const who = whoOn(k);
               const p = who === undefined ? null : plan.parents[who];
               const isToday = k === dayKeyOf(now);
               return (
