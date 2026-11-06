@@ -22,6 +22,7 @@ CACHE = Path(__file__).parent / "data" / "site_cache.json"
 MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-5-5")
 HEADERS = {"User-Agent": "ShilohEventsApp/1.0 (family calendar viewer)"}
 MAX_SITES = 20
+PARSER = "2"  # bump to re-read every site after changing how events are read
 
 PROMPT = """You extract dated events from one web page that a family added to their calendar app.
 Today is {today}. Times are America/Chicago. Infer the year from today's date when the page omits it.
@@ -81,6 +82,23 @@ def _event(site, title, start, end, all_day, location=None, description=None):
     }
 
 
+def _clean_desc(d):
+    # Drop calendar-service boilerplate like "(Please note that updates can take up to 24 hours ...)".
+    return re.sub(r"\s*\(Please note[^)]*\)", "", d or "").strip()
+
+
+def _place(site, desc, loc):
+    """Location text; for Exposure Events league calendars, lead with the court ("League - Division - Court")."""
+    loc = re.sub(r"\s+", " ", loc or "").strip()
+    loc = re.sub(r"\b(\w+)(?: \1\b)+", r"\1", loc)  # "Fayetteville Fayetteville" -> "Fayetteville"
+    if "exposureevents.com" in site["url"]:
+        parts = [x.strip() for x in desc.split(" - ") if x.strip()]
+        if len(parts) >= 3:
+            court = parts[-1]
+            return f"{court} court · {loc}" if loc else f"{court} court"
+    return loc
+
+
 def _from_ics(site, body, now):
     import icalendar
     import recurring_ical_events
@@ -93,13 +111,15 @@ def _from_ics(site, body, now):
         title = str(c.get("SUMMARY") or "").strip()
         if not title:
             continue
+        desc = _clean_desc(str(c.get("DESCRIPTION") or ""))
+        place = _place(site, desc, str(c.get("LOCATION") or ""))
         if isinstance(s, datetime):
             s2 = (s if s.tzinfo else s.replace(tzinfo=TZ)).astimezone(TZ)
             e2 = (e if isinstance(e, datetime) and e.tzinfo else (e.replace(tzinfo=TZ) if isinstance(e, datetime) else s2)).astimezone(TZ)
-            ev = _event(site, title, s2.isoformat(), e2.isoformat(), False, str(c.get("LOCATION") or ""), str(c.get("DESCRIPTION") or ""))
+            ev = _event(site, title, s2.isoformat(), e2.isoformat(), False, place, desc)
         else:
             last = (e - timedelta(days=1)) if isinstance(e, date) and e > s else s  # DTEND is exclusive for all-day events
-            ev = _event(site, title, s.isoformat(), last.isoformat(), True, str(c.get("LOCATION") or ""), str(c.get("DESCRIPTION") or ""))
+            ev = _event(site, title, s.isoformat(), last.isoformat(), True, place, desc)
         out.append(ev)
     return out
 
@@ -149,7 +169,7 @@ def fetch_site_events(now=None):
             r = requests.get(site["url"], headers=HEADERS, timeout=25)
             r.raise_for_status()
             body = r.content
-            digest = hashlib.sha1(body).hexdigest()
+            digest = hashlib.sha1(PARSER.encode() + body).hexdigest()
             hit = cache.get(key)
             if hit and hit.get("hash") == digest:
                 evs = hit["events"]

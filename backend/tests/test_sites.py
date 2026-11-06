@@ -80,3 +80,11 @@ def test_failed_site_keeps_cached(monkeypatch, tmp_path):
 
     monkeypatch.setattr(read_sites.requests, "get", boom)
     assert [e["title"] for e in read_sites.fetch_site_events()] == ["Old"]
+
+
+def test_exposure_court_and_cleanup():
+    site = {"name": "W", "url": "https://ical.exposureevents.com/calendar-team-1.ics"}
+    desc = read_sites._clean_desc("AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours.)")
+    assert desc == "AAO NWA League  - Boys 5th Gold - Lindsey"
+    assert read_sites._place(site, desc, "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704") ==         "Lindsey court · 1515 Burr Oak Drive Fayetteville Arkansas 72704"
+    assert read_sites._place({"url": "https://other.example/x"}, desc, "Gym") == "Gym"
