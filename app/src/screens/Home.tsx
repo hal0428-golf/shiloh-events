@@ -1,7 +1,9 @@
+import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
-import { EventItem, dayKey, eventsByDay, getMyGrades, isEmail, isFamily, isHoliday, isParent, Locked, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
+import { getPlan, parentIndex } from '../parents';
+import { EventItem, dayKey, eventsByDay, getMyGrades, isEmail, isFamily, isSite, isHoliday, isParent, Locked, isMyGrade, loadEvents, loadMyGrades, visibleEvent } from '../lib';
 import { useTheme } from '../theme';
 import DaySheet from './DaySheet';
 import DayView from './DayView';
@@ -91,7 +93,7 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
   }, [shown]);
 
   const filtered = useMemo(
-    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isMyGrade(e) || isHoliday(e) || isEmail(e) || isFamily(e) || isParent(e) : (e.category ?? 'Other') === filter)),
+    () => shown.filter((e) => filter === 'All' || (filter === ELEM ? isMyGrade(e) || isHoliday(e) || isEmail(e) || isFamily(e) || isSite(e) || isParent(e) : (e.category ?? 'Other') === filter)),
     [shown, filter],
   );
   const byDay = useMemo(() => eventsByDay(filtered), [filtered]);
@@ -116,6 +118,17 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
     : info?.isSeed ? 'Sample events only (live feed not connected) · tap to refresh'
     : [info?.offline ? 'Offline, showing saved events' : info?.updated ? `School feed built ${fmt(new Date(info.updated))}` : null,
        checked ? `checked ${checked.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : null, 'tap to refresh'].filter(Boolean).join(' · ');
+  // Parent days this month and today's parent, like Duet's legend.
+  const parentCounts = [0, 0];
+  let todayParent = -1;
+  for (const [k, list] of byDay) {
+    const p = list.find((e) => e.category === 'Parent');
+    const i = p ? parentIndex(p.title) : -1;
+    if (i < 0) continue;
+    if (k.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`)) parentCounts[i]++;
+    if (k === dayKey(today0)) todayParent = i;
+  }
+  const plan = getPlan();
   const canPrev = cursor > base;
   const canNext = cursor < base + MAX_AHEAD;
 
@@ -125,7 +138,7 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
         <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
           <Text style={[s.h1, { color: t.hol, flex: 1, fontSize: 24, fontWeight: 'normal' }]} numberOfLines={1}>Events</Text>
           <Pressable onPress={() => { setCursor(base); setDayCur(today0); }} hitSlop={8}>
-            <Text style={[s.h1, { color: t.month, fontSize: 24, fontWeight: 'normal' }]} numberOfLines={1}>{monthName}</Text>
+            <Text style={[s.h1, { color: '#2f6fdc', fontSize: 24, fontWeight: 'normal' }]} numberOfLines={1}>{monthName}</Text>
           </Pressable>
         </View>
         <Pressable onPress={() => Linking.openURL('https://shilohsaints.org')} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
@@ -151,7 +164,7 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Arrow dir="prev" enabled={canPrevDay} onPress={() => shift(-1)} />
             <Pressable onPress={() => setDayCur(today0)}>
-              <Text style={{ color: t.month, fontSize: 15, fontWeight: '800', textAlign: 'center' }} numberOfLines={1}>{dayLabel}</Text>
+              <Text style={{ color: '#2f6fdc', fontSize: 15, fontWeight: '800', textAlign: 'center' }} numberOfLines={1}>{dayLabel}</Text>
             </Pressable>
             <Arrow dir="next" enabled={canNextDay} onPress={() => shift(1)} />
           </View>
@@ -181,11 +194,23 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
           onPress={onSettings}
           hitSlop={8}
           accessibilityLabel="Settings"
-          style={({ pressed }) => [{ width: 34, height: 34, borderRadius: 17, backgroundColor: t.accent, alignItems: 'center', justifyContent: 'center', marginRight: 12, opacity: pressed ? 0.7 : 1 }]}>
-          <Text style={{ color: onAccent, fontSize: 20, lineHeight: 24 }}>{'⚙︎'}</Text>
+          style={({ pressed }) => [{ width: 34, height: 34, alignItems: 'center', justifyContent: 'center', marginLeft: 6, marginRight: 12, backgroundColor: 'transparent', opacity: pressed ? 0.5 : 1 }]}>
+          <SymbolView name="gearshape" type="monochrome" tintColor="#8e8e93" size={26} weight="regular" style={{ width: 26, height: 26, backgroundColor: 'transparent' }}
+            fallback={<Text style={{ color: '#8e8e93', fontSize: 24, lineHeight: 28 }}>{'⚙︎'}</Text>} />
         </Pressable>
       </View>
 
+      {view === 'month' && parentCounts[0] + parentCounts[1] > 0 ? (
+        <View style={s.legend}>
+          {([0, 1] as const).map((i) => (
+            <View key={i} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: plan.parents[i].color, marginRight: 5 }} />
+              <Text style={{ color: t.text, fontSize: 12, fontWeight: '600' }}>{plan.parents[i].name} {parentCounts[i]}</Text>
+            </View>
+          ))}
+          {todayParent >= 0 ? <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>{plan.child?.trim() ? `Today ${plan.child.trim()} is with ` : 'Today: '}<Text style={{ color: plan.parents[todayParent].color, fontWeight: '800' }}>{plan.parents[todayParent].name}</Text></Text> : null}
+        </View>
+      ) : null}
       {view === 'month'
         ? <View style={{ flex: 1 }} {...pan.panHandlers}><MonthGrid byDay={byDay} year={year} month={month} onDay={setDay} /></View>
         : view === 'day'
@@ -203,6 +228,7 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
 const s = StyleSheet.create({
   header: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 },
   h1: { fontSize: 22, fontWeight: '800' },
+  legend: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, paddingBottom: 4 },
   status: { paddingVertical: 10, paddingHorizontal: 12 },
   btn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10 },
   bar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 4 },

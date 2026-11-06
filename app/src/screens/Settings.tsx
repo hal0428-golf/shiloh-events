@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { GRADES, Grade, getMyGrades, gradeName, gradeShort, saveMyGrades } from '../lib';
 import { FamilyCal, getFamilyCal, listPhoneCalendars, setFamilyCal } from '../familyCal';
+import { getPlan } from '../parents';
 import { useTheme } from '../theme';
 
-export default function Settings({ onBack, onSetup, onChangeCode }: { onBack: () => void; onSetup: () => void; onChangeCode: () => void }) {
+export default function Settings({ onBack, onSetup, onChangeCode, onSchedule, onSites }: { onBack: () => void; onSetup: () => void; onChangeCode: () => void; onSchedule: () => void; onSites: () => void }) {
   const t = useTheme();
   const [grades, setGrades] = useState<Grade[]>(getMyGrades);
   const toggle = (g: Grade) => {
@@ -27,9 +28,9 @@ export default function Settings({ onBack, onSetup, onChangeCode }: { onBack: ()
   return (
     <ScrollView style={{ flex: 1, backgroundColor: t.bg }} contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
       <Pressable onPress={onBack}><Text style={{ color: t.accent, fontSize: 16, fontWeight: '600' }}>‹ Events</Text></Pressable>
-      <Text style={{ color: t.text, fontSize: 26, fontWeight: '800', marginTop: 12 }}>Settings</Text>
+      <Text style={{ color: '#1fa34a', fontSize: 26, fontWeight: '800', marginTop: 12 }}>Settings</Text>
 
-      <Text style={[st.h2, { color: t.text }]}>Grades</Text>
+      <Text style={[st.h2, { color: '#0a60d0' }]}>Grades</Text>
       <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>
         Events for these grades are shown in yellow and under My Grade. Events just for other grades are hidden. Tap to choose one or more.
       </Text>
@@ -46,9 +47,17 @@ export default function Settings({ onBack, onSetup, onChangeCode }: { onBack: ()
       </View>
       <Text style={{ color: t.sub, fontSize: 13, marginTop: 8 }}>Selected: {chosen}</Text>
 
-      <Text style={[st.h2, { color: t.text }]}>Co-parent calendar</Text>
+      <Text style={[st.h2, { color: '#0a60d0' }]}>Parenting schedule</Text>
+      <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>Two parents, their colors, and who has the kids each day, like Duet.</Text>
+      <Pressable onPress={onSchedule} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>
+        {([0, 1] as const).map((i) => <View key={i} style={[st.dot, { backgroundColor: getPlan().parents[i].color }]} />)}
+        <Text style={{ color: t.text, fontSize: 16, flex: 1 }}>{getPlan().parents.map((p) => p.name).join(' & ')}</Text>
+        <Text style={{ color: t.sub, fontSize: 18 }}>›</Text>
+      </Pressable>
+
+      <Text style={[st.h2, { color: '#0a60d0' }]}>Apple Calendar</Text>
       <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>
-        Show events from a calendar on this iPhone, like Duet, in purple. They stay on your phone.
+        Show events from an Apple Calendar on this iPhone (for example the Duet calendar) in purple. They stay on your phone.
       </Text>
       <Pressable onPress={pickCal} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>
         {fam ? <View style={[st.dot, { backgroundColor: t.family }]} /> : null}
@@ -76,14 +85,22 @@ export default function Settings({ onBack, onSetup, onChangeCode }: { onBack: ()
         </View>
       ) : null}
 
-      <Text style={[st.h2, { color: t.text }]}>Access code</Text>
+      <Text style={[st.h2, { color: '#0a60d0' }]}>Web sites</Text>
+      <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>Read events from web pages, like a team schedule. Add keywords to keep only the events you want. Shown in teal.</Text>
+      <Pressable onPress={onSites} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>
+        <View style={[st.dot, { backgroundColor: t.site }]} />
+        <Text style={{ color: t.text, fontSize: 16, flex: 1 }}>Web sites</Text>
+        <Text style={{ color: t.sub, fontSize: 18 }}>›</Text>
+      </Pressable>
+
+      <Text style={[st.h2, { color: '#0a60d0' }]}>Access code</Text>
       <Text style={{ color: t.sub, fontSize: 14, marginTop: 4 }}>This phone is unlocked. Only people with a code can see the calendar.</Text>
       <Pressable onPress={onChangeCode} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>
         <Text style={{ color: t.text, fontSize: 16, flex: 1 }}>Use a different code</Text>
         <Text style={{ color: t.sub, fontSize: 18 }}>›</Text>
       </Pressable>
 
-      <Text style={[st.h2, { color: t.text }]}>Email events</Text>
+      <Text style={[st.h2, { color: '#0a60d0' }]}>Email events</Text>
       <Pressable onPress={onSetup} style={[st.row, { backgroundColor: t.card, borderColor: t.line }]}>
         <Text style={{ color: t.text, fontSize: 16, flex: 1 }}>Connect your email</Text>
         <Text style={{ color: t.sub, fontSize: 18 }}>›</Text>

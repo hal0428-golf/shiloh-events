@@ -117,6 +117,31 @@ export async function saveOverride(id: string, o: Override, title: string): Prom
   throw new Error('Save failed, please try again.');
 }
 
+// ---- Any small JSON file in the repo (used by the parenting schedule) ----
+const apiFor = (path: string) => `https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`;
+
+export async function readRepoJson<T>(path: string, token: string): Promise<{ data: T | null; sha?: string }> {
+  const r = await fetch(`${apiFor(path)}?t=${Date.now()}`, { headers: headers(token) });
+  if (r.status === 404) return { data: null };
+  if (!r.ok) throw new Error(`GitHub ${r.status}`);
+  const j = await r.json();
+  return { data: JSON.parse(fromBase64(j.content)) as T, sha: j.sha };
+}
+
+/** Replace the whole file. Throws with a readable message on failure. */
+export async function writeRepoJson(path: string, data: unknown, message: string, token: string): Promise<void> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { sha } = await readRepoJson(path, token);
+    const body = { message, content: toBase64(JSON.stringify(data, null, 1) + NL), ...(sha ? { sha } : {}) };
+    const w = await fetch(apiFor(path), { method: 'PUT', headers: { ...headers(token), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (w.ok) return;
+    if (w.status === 401 || w.status === 403) throw new Error('The editing key was rejected. It may be wrong or expired.');
+    if (w.status !== 409 && w.status !== 422) throw new Error(`Save failed (GitHub ${w.status}).`);
+  }
+  throw new Error('Save failed, please try again.');
+}
+const NL = String.fromCharCode(10);
+
 // ---- UTF-8 safe base64 (GitHub's contents API uses base64) ----
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 

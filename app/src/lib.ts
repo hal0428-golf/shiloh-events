@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LockedFeed, clearAccess, getAccess, isListed, unlockFeed } from './access';
 import { FEED_URL } from './config';
 import { Overrides, applyOverrides, loadOverrides } from './edits';
+import { loadPlan, parentIndex, planEvents } from './parents';
 import { loadFamilyEvents } from './familyCal';
 
 export type EventItem = {
@@ -13,7 +14,7 @@ export type EventItem = {
   category: string | null;
   location: string | null;
   description: string | null;
-  source: 'web' | 'email' | 'manual' | 'calendar'; // calendar: read from a calendar on this phone (e.g. Duet)
+  source: 'web' | 'email' | 'manual' | 'calendar' | 'plan' | 'site'; // site: a web site added in Settings // plan: the parenting schedule in Settings // calendar: read from a calendar on this phone (e.g. Duet)
 };
 
 // ---- Grades (chosen in Settings; 5th grade until changed) ----
@@ -71,17 +72,20 @@ export const isParent = (e: EventItem) => e.category === 'Parent';
 export const isEmail = (e: EventItem) => (e.source === 'email' && !isParent(e)) || e.source === 'manual';
 /** From the co-parent calendar on this phone (Settings); purple. */
 export const isFamily = (e: EventItem) => e.source === 'calendar';
-export type Kind = 'jeff' | 'carrie' | 'parent' | 'email' | 'family' | 'holiday' | 'elem' | 'other';
+/** From a web site added in Settings; teal. */
+export const isSite = (e: EventItem) => e.source === 'site';
+export type Kind = 'p1' | 'p2' | 'parent' | 'email' | 'family' | 'site' | 'holiday' | 'elem' | 'other';
 /** Email/added events are orange even when they are also for your grade or a holiday. */
-const parentKind = (e: EventItem): Kind => (/^jeff\b/i.test(e.title) ? 'jeff' : /^carrie\b/i.test(e.title) ? 'carrie' : 'parent');
-export const kindOf = (e: EventItem): Kind => (isParent(e) ? parentKind(e) : isEmail(e) ? 'email' : isFamily(e) ? 'family' : isHoliday(e) ? 'holiday' : isMyGrade(e) ? 'elem' : 'other');
+/** Parent 1 / parent 2 from Settings, matched by name; their colors come from the schedule. */
+const parentKind = (e: EventItem): Kind => { const i = parentIndex(e.title); return i === 0 ? 'p1' : i === 1 ? 'p2' : 'parent'; };
+export const kindOf = (e: EventItem): Kind => (isParent(e) ? parentKind(e) : isEmail(e) ? 'email' : isFamily(e) ? 'family' : isSite(e) ? 'site' : isHoliday(e) ? 'holiday' : isMyGrade(e) ? 'elem' : 'other');
 
 /** Only Youth sports (Youth Football, Youth wrestling) are shown from athletics. */
 function sportAllowed(title: string): boolean {
   return /\byouth\b/i.test(title);
 }
 export function visibleEvent(e: EventItem): boolean {
-  if (e.source === 'manual' || isParent(e) || isFamily(e) || isMyGrade(e) || isHoliday(e)) return true;
+  if (e.source === 'manual' || isParent(e) || isFamily(e) || isSite(e) || isMyGrade(e) || isHoliday(e)) return true;
   if (e.category && HIDDEN_CATEGORIES.includes(e.category)) return false;
   if (forSomeGrade(e)) return false; // another grade's event
   if (SPORT_RE.test(e.title) && GAME_RE.test(e.title) && !sportAllowed(e.title)) return false;
@@ -99,13 +103,13 @@ export function eventsByDay(events: EventItem[]): Map<string, EventItem[]> {
     } else add(dayKey(startDate(e)), e);
   }
   for (const list of map.values()) {
-    const rank = (e: EventItem) => (isParent(e) ? 3 : isHoliday(e) ? 2 : isMyGrade(e) || isEmail(e) || isFamily(e) ? 1 : 0);
+    const rank = (e: EventItem) => (isParent(e) ? 3 : isHoliday(e) ? 2 : isMyGrade(e) || isEmail(e) || isFamily(e) || isSite(e) ? 1 : 0);
     list.sort((a, b) => rank(b) - rank(a) || Number(b.allDay) - Number(a.allDay) || startDate(a).getTime() - startDate(b).getTime());
   }
   return map;
 }
 
-type Feed = { generated: string; events: EventItem[]; overrides?: Overrides };
+type Feed = { generated: string; events: EventItem[]; overrides?: Overrides; parents?: unknown };
 const CACHE_KEY = 'events-cache-v2';
 /** none: no access code on this phone yet. revoked: the code was removed from the list. */
 export type Locked = 'none' | 'revoked';
@@ -168,11 +172,13 @@ export function groupByDay(events: EventItem[], now = new Date()) {
 export async function loadEvents(): Promise<{ events: EventItem[]; updated: string | null; offline: boolean; isSeed: boolean; locked?: Locked }> {
   const r = await loadFeed();
   if (r.locked) return { events: [], updated: null, offline: false, isSeed: false, locked: r.locked };
-  const [ov, fam] = await Promise.all([loadOverrides(r.overrides), loadFamilyEvents()]);
-  return { events: [...applyOverrides(r.events, ov), ...fam], updated: r.updated, offline: r.offline, isSeed: false };
+  const [ov, fam, plan] = await Promise.all([loadOverrides(r.overrides), loadFamilyEvents(), loadPlan(r.parents)]);
+  // Days set in the parenting schedule win over parent days from emails.
+  const fromEmail = applyOverrides(r.events, ov).filter((e) => !(isParent(e) && e.start.slice(0, 10) in plan.days));
+  return { events: [...fromEmail, ...planEvents(plan), ...fam], updated: r.updated, offline: r.offline, isSeed: false };
 }
 
-async function loadFeed(): Promise<{ events: EventItem[]; overrides?: Overrides; updated: string | null; offline: boolean; locked?: Locked }> {
+async function loadFeed(): Promise<{ events: EventItem[]; overrides?: Overrides; parents?: unknown; updated: string | null; offline: boolean; locked?: Locked }> {
   const a = await getAccess();
   if (!a) return { events: [], updated: null, offline: false, locked: 'none' };
   let locked: LockedFeed;
@@ -186,7 +192,7 @@ async function loadFeed(): Promise<{ events: EventItem[]; overrides?: Overrides;
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
         const feed = JSON.parse(cached) as Feed;
-        return { events: feed.events, overrides: feed.overrides, updated: feed.generated, offline: true };
+        return { events: feed.events, overrides: feed.overrides, parents: feed.parents, updated: feed.generated, offline: true };
       }
     } catch {}
     return { events: [], updated: null, offline: true };
@@ -200,5 +206,5 @@ async function loadFeed(): Promise<{ events: EventItem[]; overrides?: Overrides;
   const feed = unlockFeed<Feed>(locked, a);
   if (!feed) throw new Error('Could not read the calendar');
   try { await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(feed)); } catch {}
-  return { events: feed.events, overrides: feed.overrides, updated: feed.generated, offline: false };
+  return { events: feed.events, overrides: feed.overrides, parents: feed.parents, updated: feed.generated, offline: false };
 }

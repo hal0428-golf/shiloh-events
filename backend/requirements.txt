@@ -3,3 +3,5 @@ beautifulsoup4>=4.12
 anthropic>=0.40
 pytest>=8
 cryptography>=42
+icalendar>=6
+recurring-ical-events>=3

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:                       # an edit saved in the app shows up for everyone within a couple of minutes
     branches: [main]
-    paths: [docs/overrides.json]
+    paths: [docs/overrides.json, docs/parents.json, docs/sources.json]
 permissions:
   contents: write
 concurrency:

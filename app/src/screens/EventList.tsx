@@ -23,7 +23,7 @@ export default function EventList({
             onPress={() => onOpen(item)}
             style={[s.card, { backgroundColor: t.card, borderColor: t.line, borderLeftColor: k.edge, borderLeftWidth: kind === 'other' ? StyleSheet.hairlineWidth : 5 }]}>
             <Text style={{ color: t.sub, fontSize: 12, fontWeight: '600' }}>
-              {formatTime(item)}{kind === 'elem' ? `  ·  ${myGradeLabel(item)}` : kind === 'holiday' ? '  ·  Holiday' : ''}{item.category === 'Parent' ? '  ·  Parent schedule' : item.source === 'email' ? '  ·  from email' : item.source === 'calendar' ? `  ·  ${item.category}` : ''}
+              {formatTime(item)}{kind === 'elem' ? `  ·  ${myGradeLabel(item)}` : kind === 'holiday' ? '  ·  Holiday' : ''}{item.category === 'Parent' ? '  ·  Parent schedule' : item.source === 'email' ? '  ·  from email' : item.source === 'calendar' || item.source === 'site' ? `  ·  ${item.category}` : ''}
             </Text>
             <Text style={[{ color: t.text, fontSize: 16, fontWeight: '600', marginTop: 2 }, kind !== 'other' && { color: k.fg, backgroundColor: k.bg, alignSelf: 'flex-start', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 5, overflow: 'hidden' }]}>{item.title}</Text>
             {item.location ? <Text style={{ color: t.sub, fontSize: 13, marginTop: 2 }}>{item.location}</Text> : null}
