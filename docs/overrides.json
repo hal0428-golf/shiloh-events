@@ -41,5 +41,59 @@
  },
  "manual_mw48x27yudga": {
   "deleted": true
+ },
+ "manual_bball_20261107_1800": {
+  "title": "Basketball vs Rogers",
+  "location": "Fayetteville AAO – Lindsey court",
+  "description": "AAO NWA League, Boys 5th Gold Pool A",
+  "allDay": false,
+  "start": "2026-11-07T18:00:00-06:00",
+  "end": "2026-11-07T19:00:00-06:00",
+  "added": true
+ },
+ "manual_bball_20261107_1920": {
+  "title": "Basketball vs Farmington",
+  "location": "Fayetteville AAO – Lindsey court",
+  "description": "AAO NWA League, Boys 5th Gold Pool A",
+  "allDay": false,
+  "start": "2026-11-07T19:20:00-06:00",
+  "end": "2026-11-07T20:20:00-06:00",
+  "added": true
+ },
+ "manual_bball_20261114_1120": {
+  "title": "Basketball vs Westville",
+  "location": "Fayetteville AAO – Lindsey court",
+  "description": "AAO NWA League, Boys 5th Gold Pool A",
+  "allDay": false,
+  "start": "2026-11-14T11:20:00-06:00",
+  "end": "2026-11-14T12:20:00-06:00",
+  "added": true
+ },
+ "manual_bball_20261114_1240": {
+  "title": "Basketball vs Springdale",
+  "location": "Fayetteville AAO – Lindsey court",
+  "description": "AAO NWA League, Boys 5th Gold Pool A",
+  "allDay": false,
+  "start": "2026-11-14T12:40:00-06:00",
+  "end": "2026-11-14T13:40:00-06:00",
+  "added": true
+ },
+ "manual_bball_20261121_1200": {
+  "title": "Basketball vs Greenwood",
+  "location": "Rogers AAO – Walmart court",
+  "description": "AAO NWA League, Boys 5th Gold Pool A",
+  "allDay": false,
+  "start": "2026-11-21T12:00:00-06:00",
+  "end": "2026-11-21T13:00:00-06:00",
+  "added": true
+ },
+ "manual_bball_20261121_1320": {
+  "title": "Basketball vs Alma",
+  "location": "Rogers AAO – Walmart court",
+  "description": "AAO NWA League, Boys 5th Gold Pool A",
+  "allDay": false,
+  "start": "2026-11-21T13:20:00-06:00",
+  "end": "2026-11-21T14:20:00-06:00",
+  "added": true
  }
 }
