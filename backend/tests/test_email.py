@@ -72,3 +72,39 @@ def test_newer_schedule_replaces_older_written_events():
 def test_parent_prompt_formats():
     t = read_email.PARENT_PROMPT.format(received="Thu", subject="Parent Schedule", body="", parents="Jeff, Carrie", initials="J = Jeff, C = Carrie")
     assert "J = Jeff" in t and '{"days": [], "events": []}' in t
+
+
+def test_pdf_attachment_found():
+    from email.message import EmailMessage
+    m = EmailMessage()
+    m.set_content("calendar attached")
+    m.add_attachment(b"%PDF-1.4 fake", maintype="application", subtype="octet-stream", filename="December.PDF")
+    blocks = read_email._images(m)
+    assert blocks[0]["type"] == "document" and blocks[0]["source"]["media_type"] == "application/pdf"
+
+
+def test_schedule_without_subject_uses_parent_reader(monkeypatch):
+    calls = []
+
+    def fake_extract(client, subject, body, received, prompt=read_email.PROMPT, images=(), model=read_email.MODEL):
+        calls.append(prompt is read_email.PARENT_PROMPT)
+        return {"days": [{"date": "2026-12-01", "parent": "J"}], "events": []} if prompt is read_email.PARENT_PROMPT else ["PARENT_SCHEDULE"]
+
+    monkeypatch.setattr(read_email, "_extract", fake_extract)
+    from email.message import EmailMessage
+    m = EmailMessage()
+    m["Subject"], m["Message-ID"], m["Date"] = "December", "<x@y>", "Fri, 06 Nov 2026 09:00:00 -0600"
+    m.set_content("see attached")
+
+    class Imap:
+        def __init__(self, host): pass
+        def login(self, u, p): pass
+        def select(self, *a, **k): pass
+        def search(self, *a): return "OK", [b"1"]
+        def fetch(self, n, what): return "OK", [(b"1", m.as_bytes())]
+        def logout(self): pass
+
+    monkeypatch.setattr(read_email.imaplib, "IMAP4_SSL", Imap)
+    cache = {}
+    read_email._read_inbox(None, cache, "h", "u", "p")
+    assert calls == [False, True] and cache["<x@y>"][0]["title"] == "Jeff"
