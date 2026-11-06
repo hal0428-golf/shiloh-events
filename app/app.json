@@ -38,8 +38,7 @@
         {
           "calendarPermission": "Shiloh Events reads your co-parent calendar (like Duet) so its pickups and dropoffs show next to school events. Nothing is sent anywhere."
         }
-      ],
-      "expo-font"
+      ]
     ]
   }
 }

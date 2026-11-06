@@ -1,4 +1,4 @@
-import { SymbolView } from 'expo-symbols';
+import Gear from '../Gear';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SCHOOL_NAME } from '../config';
@@ -195,8 +195,7 @@ export default function Home({ onOpen, onAdd, onSettings, onLocked }: { onOpen: 
           hitSlop={8}
           accessibilityLabel="Settings"
           style={({ pressed }) => [{ width: 34, height: 34, alignItems: 'center', justifyContent: 'center', marginLeft: 6, marginRight: 12, backgroundColor: 'transparent', opacity: pressed ? 0.5 : 1 }]}>
-          <SymbolView name="gearshape" type="monochrome" tintColor="#8e8e93" size={26} weight="regular" style={{ width: 26, height: 26, backgroundColor: 'transparent' }}
-            fallback={<Text style={{ color: '#8e8e93', fontSize: 24, lineHeight: 28 }}>{'⚙︎'}</Text>} />
+          <Gear size={24} color="#8e8e93" bg={t.bg} />
         </Pressable>
       </View>
 
