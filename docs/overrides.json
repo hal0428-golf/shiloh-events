@@ -38,5 +38,14 @@
   "allDay": true,
   "start": "2026-11-11",
   "end": "2026-11-11"
+ },
+ "manual_mw48x27yudga": {
+  "title": "Football 🏈",
+  "location": null,
+  "description": null,
+  "allDay": true,
+  "start": "2026-11-15",
+  "end": "2026-11-15",
+  "added": true
  }
 }
