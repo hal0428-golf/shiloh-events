@@ -1,6 +1,73 @@
 {
- "https://basketball.exposureevents.com/280251/aao-nwa-league/schedule|": {
-  "hash": "a884d793cd0ee967da2d65a677beb66a1f044f8c",
-  "events": []
+ "https://ical.exposureevents.com/calendar-team-5629833-280251.ics?expired=1801958400&teamname=shiloh-west|": {
+  "hash": "a14e147d5fd15be1fb6dac54f9267bccc7f4186b",
+  "events": [
+   {
+    "id": "site_935e86f69260",
+    "title": "Shiloh - West vs Rogers - Hansen",
+    "start": "2026-11-07T18:00:00-06:00",
+    "end": "2026-11-07T18:40:00-06:00",
+    "allDay": false,
+    "category": "West 5th Gold basketball",
+    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "source": "site"
+   },
+   {
+    "id": "site_650734c9b814",
+    "title": "Shiloh - West vs Farmington - Chism",
+    "start": "2026-11-07T19:20:00-06:00",
+    "end": "2026-11-07T20:00:00-06:00",
+    "allDay": false,
+    "category": "West 5th Gold basketball",
+    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "source": "site"
+   },
+   {
+    "id": "site_f76568cc39cc",
+    "title": "Shiloh - West vs Westville - Harp",
+    "start": "2026-11-14T11:20:00-06:00",
+    "end": "2026-11-14T12:00:00-06:00",
+    "allDay": false,
+    "category": "West 5th Gold basketball",
+    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "source": "site"
+   },
+   {
+    "id": "site_3046590ae988",
+    "title": "Shiloh - West vs Springdale - Davis",
+    "start": "2026-11-14T12:40:00-06:00",
+    "end": "2026-11-14T13:20:00-06:00",
+    "allDay": false,
+    "category": "West 5th Gold basketball",
+    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "source": "site"
+   },
+   {
+    "id": "site_f6c59bddb832",
+    "title": "Greenwood - Jones vs Shiloh - West",
+    "start": "2026-11-21T12:00:00-06:00",
+    "end": "2026-11-21T12:40:00-06:00",
+    "allDay": false,
+    "category": "West 5th Gold basketball",
+    "location": "4667 S Dixieland Rd Rogers Arkansas 72758",
+    "description": "AAO NWA League  - Boys 5th Gold - WALMART  (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "source": "site"
+   },
+   {
+    "id": "site_4012af1373a1",
+    "title": "Alma - Inge vs Shiloh - West",
+    "start": "2026-11-21T13:20:00-06:00",
+    "end": "2026-11-21T14:00:00-06:00",
+    "allDay": false,
+    "category": "West 5th Gold basketball",
+    "location": "4667 S Dixieland Rd Rogers Arkansas 72758",
+    "description": "AAO NWA League  - Boys 5th Gold - WALMART  (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "source": "site"
+   }
+  ]
  }
 }
