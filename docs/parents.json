@@ -1,0 +1,15 @@
+{
+ "parents": [
+  {
+   "name": "Jeff",
+   "color": "#40b0ff"
+  },
+  {
+   "name": "Carrie",
+   "color": "#34c759"
+  }
+ ],
+ "days": {
+  "2027-01-01": 0
+ }
+}
