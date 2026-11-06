@@ -1,6 +1,6 @@
 {
  "https://ical.exposureevents.com/calendar-team-5629833-280251.ics?expired=1801958400&teamname=shiloh-west|": {
-  "hash": "61b4c6d1441672b8fba0c2561ea4bdb17d8c3f0e",
+  "hash": "df89f32af1579eeefbf2ca14a5a951a4d6f5ffef",
   "events": [
    {
     "id": "site_935e86f69260",
@@ -9,8 +9,8 @@
     "end": "2026-11-07T18:40:00-06:00",
     "allDay": false,
     "category": "West 5th Gold basketball",
-    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
-    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "location": "Lindsey court \u00b7 1515 Burr Oak Drive Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey",
     "source": "site"
    },
    {
@@ -20,8 +20,8 @@
     "end": "2026-11-07T20:00:00-06:00",
     "allDay": false,
     "category": "West 5th Gold basketball",
-    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
-    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "location": "Lindsey court \u00b7 1515 Burr Oak Drive Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey",
     "source": "site"
    },
    {
@@ -31,8 +31,8 @@
     "end": "2026-11-14T12:00:00-06:00",
     "allDay": false,
     "category": "West 5th Gold basketball",
-    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
-    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "location": "Lindsey court \u00b7 1515 Burr Oak Drive Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey",
     "source": "site"
    },
    {
@@ -42,8 +42,8 @@
     "end": "2026-11-14T13:20:00-06:00",
     "allDay": false,
     "category": "West 5th Gold basketball",
-    "location": "1515 Burr Oak Drive  Fayetteville Fayetteville Arkansas 72704",
-    "description": "AAO NWA League  - Boys 5th Gold - Lindsey (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "location": "Lindsey court \u00b7 1515 Burr Oak Drive Fayetteville Arkansas 72704",
+    "description": "AAO NWA League  - Boys 5th Gold - Lindsey",
     "source": "site"
    },
    {
@@ -53,8 +53,8 @@
     "end": "2026-11-21T12:40:00-06:00",
     "allDay": false,
     "category": "West 5th Gold basketball",
-    "location": "4667 S Dixieland Rd Rogers Arkansas 72758",
-    "description": "AAO NWA League  - Boys 5th Gold - WALMART  (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "location": "WALMART court \u00b7 4667 S Dixieland Rd Rogers Arkansas 72758",
+    "description": "AAO NWA League  - Boys 5th Gold - WALMART",
     "source": "site"
    },
    {
@@ -64,8 +64,8 @@
     "end": "2026-11-21T14:00:00-06:00",
     "allDay": false,
     "category": "West 5th Gold basketball",
-    "location": "4667 S Dixieland Rd Rogers Arkansas 72758",
-    "description": "AAO NWA League  - Boys 5th Gold - WALMART  (Please note that updates can take up to 24 hours to fully populate subscribed schedules.)",
+    "location": "WALMART court \u00b7 4667 S Dixieland Rd Rogers Arkansas 72758",
+    "description": "AAO NWA League  - Boys 5th Gold - WALMART",
     "source": "site"
    }
   ]
